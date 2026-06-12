@@ -10,6 +10,7 @@ from app.models.user import User
 from app.models.case import Case
 from app.models.evidence import Evidence
 from app.models.entity import Entity
+from app.models.entity_occurrence import EntityOccurrence
 from app.models.relationship import Relationship
 from app.models.audit_log import AuditLog
 
@@ -18,6 +19,7 @@ __all__ = [
     "Case",
     "Evidence",
     "Entity",
+    "EntityOccurrence",
     "Relationship",
     "AuditLog",
 ]
