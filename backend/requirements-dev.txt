@@ -2,3 +2,7 @@
 -r requirements.txt
 
 pytest==8.3.4
+
+# Required by fastapi.testclient.TestClient (Starlette's TestClient is
+# built on httpx). Test-only; not a runtime dependency.
+httpx==0.28.1
