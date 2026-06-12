@@ -14,6 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.entity import Entity
+from app.models.entity_occurrence import EntityOccurrence
 from app.models.enums import EntityType
 from app.services import extraction, normalization
 
@@ -50,21 +51,79 @@ def get_or_create(
     return entity, True
 
 
-def extract_and_store(db: Session, *, text: str) -> list[Entity]:
-    """Extract entities from text and upsert them. Returns unique entities."""
-    seen: set[tuple[EntityType, str]] = set()
-    entities: list[Entity] = []
+def _record_occurrence(
+    db: Session,
+    *,
+    entity_id: int,
+    case_id: int,
+    evidence_id: int | None,
+    mentions: int,
+) -> None:
+    """
+    Link an entity to a case, or bump its mention_count if already linked.
+
+    Honors the (entity_id, case_id) unique constraint: one link per
+    entity per case, with a running count of how often it was seen.
+    """
+    occurrence = db.scalar(
+        select(EntityOccurrence).where(
+            EntityOccurrence.entity_id == entity_id,
+            EntityOccurrence.case_id == case_id,
+        )
+    )
+    if occurrence is None:
+        db.add(
+            EntityOccurrence(
+                entity_id=entity_id,
+                case_id=case_id,
+                evidence_id=evidence_id,
+                mention_count=mentions,
+            )
+        )
+    else:
+        occurrence.mention_count += mentions
+    db.flush()
+
+
+def extract_and_store(
+    db: Session,
+    *,
+    text: str,
+    case_id: int | None = None,
+    evidence_id: int | None = None,
+) -> list[Entity]:
+    """
+    Extract entities from text and upsert them. Returns unique entities.
+
+    When `case_id` is given, each distinct entity is also linked to that
+    case via an EntityOccurrence, with mention_count reflecting how many
+    times it appeared in this text. That provenance is what powers
+    correlation/search later.
+    """
+    # Count mentions per (type, normalized) so mention_count is accurate.
+    counts: dict[tuple[EntityType, str], int] = {}
+    raw_for_key: dict[tuple[EntityType, str], str] = {}
 
     for extracted in extraction.extract(text):
         normalized = normalization.normalize(extracted.entity_type, extracted.raw_value)
         key = (extracted.entity_type, normalized)
-        if key in seen:
-            continue
-        seen.add(key)
+        counts[key] = counts.get(key, 0) + 1
+        raw_for_key.setdefault(key, extracted.raw_value)
 
+    entities: list[Entity] = []
+    for (entity_type, _normalized), mentions in counts.items():
         entity, _created = get_or_create(
-            db, entity_type=extracted.entity_type, raw_value=extracted.raw_value
+            db, entity_type=entity_type, raw_value=raw_for_key[(entity_type, _normalized)]
         )
         entities.append(entity)
+
+        if case_id is not None:
+            _record_occurrence(
+                db,
+                entity_id=entity.id,
+                case_id=case_id,
+                evidence_id=evidence_id,
+                mentions=mentions,
+            )
 
     return entities
