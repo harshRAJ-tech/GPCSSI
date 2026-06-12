@@ -19,8 +19,12 @@ class Settings(BaseSettings):
     # Database connection (no default -> must be supplied)
     DATABASE_URL: str
 
-    # Secret used later for signing auth tokens. No default on purpose.
+    # Secret used to sign auth tokens. No default on purpose.
     SECRET_KEY: str
+
+    # JWT settings.
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # Where uploaded evidence is stored on disk.
     UPLOAD_DIR: str = "uploads"

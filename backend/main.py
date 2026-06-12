@@ -14,6 +14,8 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.init_db import init_db
+from app.api.routes import auth as auth_routes
+from app.api.routes import evidence as evidence_routes
 
 
 @asynccontextmanager
@@ -28,6 +30,9 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.include_router(auth_routes.router)
+app.include_router(evidence_routes.router)
 
 
 @app.get("/health")
