@@ -1,0 +1,19 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# ORM + Postgres driver
+SQLAlchemy==2.0.36
+psycopg[binary]==3.2.3
+
+# Settings management (reads from env, never hardcoded secrets)
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# Password hashing for auth (bcrypt)
+passlib[bcrypt]==1.7.4
+
+# JWT encoding/decoding for stateless auth tokens
+PyJWT==2.10.1
+
+# Multipart form parsing, required by FastAPI for file uploads
+python-multipart==0.0.20
