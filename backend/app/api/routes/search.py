@@ -9,14 +9,14 @@ override. Authenticated and audited as a SEARCH action; the audited
 target_ref deliberately records only the entity type, never the searched
 value itself, so the audit log does not accumulate sensitive query data.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.enums import AuditAction, EntityType
 from app.models.user import User
-from app.schemas.search import CorrelationOut
+from app.schemas.search import CorrelationOut, EntityExpansionOut
 from app.services import audit, correlation
 
 router = APIRouter(prefix="/search", tags=["search"])
@@ -53,5 +53,42 @@ def search(
         entity_type=result.entity_type,
         normalized_value=result.normalized_value,
         cases=[c.__dict__ for c in result.cases],
+        connected_entities=[c.__dict__ for c in result.connected_entities],
+    )
+
+
+@router.get("/expand/{entity_id}", response_model=EntityExpansionOut)
+def expand(
+    request: Request,
+    entity_id: int = Path(ge=1),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> EntityExpansionOut:
+    """Expand a known entity into its connected entities (graph drill-down).
+
+    WHY: powers lazy, node-by-node expansion in the Graph Explorer. Like
+    /search, it is authenticated and audited as a SEARCH action; the
+    audited target_ref records only the entity type, never any value.
+    """
+    result = correlation.expand_entity(db, entity_id=entity_id)
+
+    audit.record(
+        db,
+        action=AuditAction.SEARCH,
+        user_id=current_user.id,
+        target_ref=f"expand:{result.entity_type.value if result else 'unknown'}",
+        source_ip=request.client.host if request.client else None,
+    )
+    db.commit()
+
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No entity found for the supplied id",
+        )
+    return EntityExpansionOut(
+        entity_id=result.entity_id,
+        entity_type=result.entity_type,
+        normalized_value=result.normalized_value,
         connected_entities=[c.__dict__ for c in result.connected_entities],
     )
