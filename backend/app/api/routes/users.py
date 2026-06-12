@@ -44,7 +44,7 @@ def create_user_endpoint(
 
     audit.record(
         db,
-        action=AuditAction.CREATE_CASE,  # placeholder until a CREATE_USER action exists
+        action=AuditAction.CREATE_USER,
         user_id=admin.id,
         target_ref=f"user:{user.id}",
         source_ip=request.client.host if request.client else None,

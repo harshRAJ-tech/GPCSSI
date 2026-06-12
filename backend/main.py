@@ -16,6 +16,7 @@ from app.core.database import get_db
 from app.core.init_db import init_db
 from app.api.routes import auth as auth_routes
 from app.api.routes import cases as cases_routes
+from app.api.routes import entities as entities_routes
 from app.api.routes import evidence as evidence_routes
 from app.api.routes import users as users_routes
 
@@ -36,6 +37,7 @@ app = FastAPI(
 app.include_router(auth_routes.router)
 app.include_router(users_routes.router)
 app.include_router(cases_routes.router)
+app.include_router(entities_routes.router)
 app.include_router(evidence_routes.router)
 
 
