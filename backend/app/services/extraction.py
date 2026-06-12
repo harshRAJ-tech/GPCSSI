@@ -38,7 +38,10 @@ _PATTERNS: list[tuple[EntityType, re.Pattern[str]]] = [
     # UTR / RRN: a standalone 12-digit reference number.
     (EntityType.UTR, re.compile(r"\bUTR[:\s]*([0-9]{12})\b", re.IGNORECASE)),
     # UPI handle: localpart@psp where psp is alphabetic (ybl, oksbi, paytm).
-    (EntityType.UPI, re.compile(r"\b[a-zA-Z0-9._-]{2,256}@[a-zA-Z]{2,64}\b")),
+    # The negative lookahead (?!\.[a-zA-Z]) ensures the psp is NOT followed
+    # by a dotted TLD -- that would make it an email domain, not a UPI psp.
+    # So 'fraud@ybl' matches (UPI) but 'victim@gmail.com' does not (email).
+    (EntityType.UPI, re.compile(r"\b[a-zA-Z0-9._-]{2,256}@[a-zA-Z]{2,64}\b(?!\.[a-zA-Z])")),
     # Email: requires a dotted TLD, which distinguishes it from a UPI handle.
     (EntityType.EMAIL, re.compile(r"\b[a-zA-Z0-9._%+-]{1,64}@[a-zA-Z0-9.-]{1,255}\.[a-zA-Z]{2,24}\b")),
     # Crypto: BTC bech32 / legacy, or 0x-prefixed 40-hex (ETH/USDT-ERC20).
