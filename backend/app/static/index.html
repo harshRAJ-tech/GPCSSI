@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Cyber Investigation Intelligence Platform</title>
+
+  <!--
+    Build-step-free stack (per product decision):
+      - Tailwind Play CDN for styling (dev/demo; bundle + add CSP for prod).
+      - Cytoscape.js (version-pinned CDN, SRI-protected) for the graph.
+    SECURITY NOTES:
+      - All API/evidence-derived data is rendered via textContent / DOM
+        APIs only. We NEVER use innerHTML with untrusted values, so a
+        malicious value extracted from uploaded evidence cannot inject script.
+      - The JWT lives in sessionStorage (cleared when the tab closes), not
+        localStorage, to shrink the token-theft window. Tracked follow-up:
+        move to a bundled SPA with a strict CSP + httpOnly cookie auth.
+  -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    NOTE on SRI: a Subresource Integrity hash should be added here for
+    production, but it must be the REAL hash for this exact file. It is
+    intentionally omitted rather than guessed (a wrong hash silently
+    blocks the script). Tracked follow-up: pin + SRI, or self-host the
+    library so it is covered by a strict CSP.
+  -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+    onerror="window.__cytoscapeFailed=true"
+  ></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ink: '#0a0e14',
+            panel: '#0f141c',
+            panel2: '#141b26',
+            line: '#1f2937',
+            accent: '#38bdf8',
+            accent2: '#22d3ee',
+          },
+          fontFamily: {
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    html, body { height: 100%; }
+    body { background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(56,189,248,0.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(34,211,238,0.06), transparent 55%),
+      #0a0e14; }
+    .glass { background: rgba(15,20,28,0.72); backdrop-filter: blur(10px); }
+    .ring-glow:focus { outline: none; box-shadow: 0 0 0 2px rgba(56,189,248,0.55); }
+    .fade-in { animation: fade .35s ease both; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px);} to {opacity:1; transform:none;} }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    #cy { width: 100%; height: 100%; }
+  </style>
+</head>
+
+<body class="text-slate-200 font-sans antialiased">
+
+  <!-- ============================ LOGIN GATE ============================ -->
+  <section id="login-view" class="min-h-screen flex items-center justify-center p-6">
+    <div class="glass w-full max-w-md rounded-2xl border border-line p-8 fade-in shadow-2xl">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-accent to-accent2 grid place-items-center text-ink font-black">CI</div>
+        <div>
+          <h1 class="text-lg font-semibold tracking-tight">Cyber Investigation</h1>
+          <p class="text-xs text-slate-400 -mt-0.5">Intelligence Platform</p>
+        </div>
+      </div>
+      <form id="login-form" class="space-y-4" autocomplete="off">
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Username</label>
+          <input id="username" name="username" type="text" required
+            class="ring-glow w-full rounded-lg bg-panel2 border border-line px-3 py-2.5 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Password</label>
+          <input id="password" name="password" type="password" required
+            class="ring-glow w-full rounded-lg bg-panel2 border border-line px-3 py-2.5 text-sm" />
+        </div>
+        <button type="submit"
+          class="w-full rounded-lg bg-gradient-to-r from-accent to-accent2 text-ink font-semibold py-2.5 text-sm hover:opacity-90 transition">
+          Sign in
+        </button>
+        <p id="login-error" class="text-sm text-rose-400 min-h-[1.25rem]" role="alert"></p>
+      </form>
+      <p class="mt-4 text-[11px] leading-relaxed text-slate-500">
+        Authorized personnel only. All actions are audited.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================ APP SHELL ============================ -->
+  <main id="app-view" class="hidden min-h-screen flex flex-col">
+    <!-- Top bar -->
+    <header class="glass border-b border-line">
+      <div class="mx-auto max-w-7xl px-5 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="h-7 w-7 rounded-lg bg-gradient-to-br from-accent to-accent2 grid place-items-center text-ink text-xs font-black">CI</div>
+          <span class="text-sm font-semibold tracking-tight">Search Center</span>
+        </div>
+        <button id="logout-btn" class="text-xs text-slate-400 hover:text-slate-200 transition">Sign out</button>
+      </div>
+    </header>
+
+    <!-- Search bar -->
+    <div class="mx-auto max-w-7xl w-full px-5 pt-6">
+      <form id="search-form" class="flex gap-2">
+        <div class="relative flex-1">
+          <input id="search-input" type="text" required maxlength="512"
+            placeholder="Search a phone, UPI, bank account, IFSC, UTR, email, wallet..."
+            class="ring-glow w-full rounded-xl bg-panel2 border border-line pl-11 pr-4 py-3 text-sm" />
+          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+        </div>
+        <button type="submit"
+          class="rounded-xl bg-gradient-to-r from-accent to-accent2 text-ink font-semibold px-6 text-sm hover:opacity-90 transition">
+          Search
+        </button>
+      </form>
+      <p class="mt-2 text-[11px] text-slate-500">Type is auto-detected. Values are normalized before correlation.</p>
+    </div>
+
+    <!-- Status / empty / error -->
+    <div id="status" class="mx-auto max-w-7xl w-full px-5 pt-6 hidden">
+      <div class="glass rounded-xl border border-line px-5 py-4 text-sm text-slate-300"></div>
+    </div>
+
+    <!-- Results -->
+    <section id="results" class="hidden mx-auto max-w-7xl w-full px-5 py-6 grid grid-cols-1 lg:grid-cols-5 gap-5 flex-1">
+      <!-- Left column: summary + tables -->
+      <div class="lg:col-span-2 space-y-5">
+        <!-- Entity summary -->
+        <div class="glass rounded-2xl border border-line p-5 fade-in">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-[11px] uppercase tracking-wide text-slate-400">Matched entity</p>
+              <h2 id="sum-value" class="text-xl font-semibold font-mono mt-0.5 break-all"></h2>
+            </div>
+            <span id="sum-type" class="shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold"></span>
+          </div>
+          <div class="grid grid-cols-2 gap-3 mt-5">
+            <div class="rounded-xl bg-panel2 border border-line p-3">
+              <p class="text-[11px] text-slate-400">Linked cases</p>
+              <p id="sum-cases" class="text-2xl font-bold mt-0.5">0</p>
+            </div>
+            <div class="rounded-xl bg-panel2 border border-line p-3">
+              <p class="text-[11px] text-slate-400">Connected entities</p>
+              <p id="sum-connected" class="text-2xl font-bold mt-0.5">0</p>
+            </div>
+          </div>
+          <!-- Connection strength: derived from data, NOT a risk score. -->
+          <div class="mt-4">
+            <div class="flex items-center justify-between">
+              <p class="text-[11px] text-slate-400">Connection strength <span class="text-slate-600">(derived from mentions &amp; shared cases)</span></p>
+              <span id="strength-label" class="text-[11px] font-semibold"></span>
+            </div>
+            <div class="mt-1.5 h-2 w-full rounded-full bg-panel2 overflow-hidden">
+              <div id="strength-bar" class="h-full rounded-full bg-gradient-to-r from-accent to-accent2 transition-all" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Linked cases -->
+        <div class="glass rounded-2xl border border-line p-5 fade-in">
+          <h3 class="text-sm font-semibold mb-3">Linked cases</h3>
+          <div class="overflow-hidden rounded-xl border border-line">
+            <table class="w-full text-sm">
+              <thead class="bg-panel2 text-slate-400 text-[11px] uppercase tracking-wide">
+                <tr><th class="text-left px-3 py-2">Case ID</th><th class="text-right px-3 py-2">Mentions</th></tr>
+              </thead>
+              <tbody id="cases-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Connected entities -->
+        <div class="glass rounded-2xl border border-line p-5 fade-in">
+          <h3 class="text-sm font-semibold mb-3">Connected entities</h3>
+          <div class="overflow-hidden rounded-xl border border-line">
+            <table class="w-full text-sm">
+              <thead class="bg-panel2 text-slate-400 text-[11px] uppercase tracking-wide">
+                <tr><th class="text-left px-3 py-2">Type</th><th class="text-left px-3 py-2">Value</th><th class="text-right px-3 py-2">Shared</th></tr>
+              </thead>
+              <tbody id="connected-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: graph -->
+      <div class="lg:col-span-3">
+        <div class="glass rounded-2xl border border-line p-3 h-[640px] flex flex-col fade-in">
+          <div class="flex items-center justify-between px-2 py-1.5">
+            <h3 class="text-sm font-semibold">Link graph</h3>
+            <div class="flex items-center gap-2">
+              <button id="graph-fit" class="text-[11px] text-slate-400 hover:text-slate-200 border border-line rounded-md px-2 py-1">Fit</button>
+              <span class="text-[11px] text-slate-500">click a node to focus</span>
+            </div>
+          </div>
+          <div id="cy" class="flex-1 rounded-xl bg-ink/60 border border-line"></div>
+          <div id="graph-fallback" class="hidden flex-1 grid place-items-center text-sm text-slate-500">Graph library unavailable (offline). Tables above remain fully functional.</div>
+          <div id="node-detail" class="hidden mt-2 rounded-xl bg-panel2 border border-line px-3 py-2 text-xs"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  'use strict';
+  (function () {
+    // ----------------------------------------------------------------
+    // Tiny same-origin API client. Token kept in-memory + sessionStorage.
+    // ----------------------------------------------------------------
+    const TOKEN_KEY = 'ciip_token';
+    let token = sessionStorage.getItem(TOKEN_KEY) || null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function setToken(t) {
+      token = t;
+      if (t) sessionStorage.setItem(TOKEN_KEY, t);
+      else sessionStorage.removeItem(TOKEN_KEY);
+    }
+
+    function showApp() { $('login-view').classList.add('hidden'); $('app-view').classList.remove('hidden'); }
+    function showLogin() { $('app-view').classList.add('hidden'); $('login-view').classList.remove('hidden'); }
+
+    // Entity-type -> presentation. Covers every EntityType enum value.
+    const TYPE_META = {
+      upi:           { label: 'UPI',          color: '#38bdf8' },
+      bank_account:  { label: 'Bank Account', color: '#a78bfa' },
+      ifsc:          { label: 'IFSC',         color: '#818cf8' },
+      utr:           { label: 'UTR',          color: '#c084fc' },
+      phone:         { label: 'Phone',        color: '#34d399' },
+      email:         { label: 'Email',        color: '#fbbf24' },
+      url:           { label: 'URL',          color: '#f472b6' },
+      domain:        { label: 'Domain',       color: '#fb7185' },
+      ip_address:    { label: 'IP Address',   color: '#f87171' },
+      telegram:      { label: 'Telegram',     color: '#22d3ee' },
+      crypto_wallet: { label: 'Crypto Wallet',color: '#fcd34d' },
+    };
+    const meta = (t) => TYPE_META[t] || { label: t || 'Unknown', color: '#94a3b8' };
+
+    // ----------------------------------------------------------------
+    // LOGIN (form-encoded, per OAuth2PasswordRequestForm).
+    // ----------------------------------------------------------------
+    $('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = $('login-error');
+      errEl.textContent = '';
+      const body = new URLSearchParams();
+      body.set('username', $('username').value);
+      body.set('password', $('password').value);
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString(),
+        });
+        if (!res.ok) {
+          errEl.textContent = res.status === 401
+            ? 'Incorrect username or password.'
+            : 'Sign-in failed (' + res.status + ').';
+          return;
+        }
+        const data = await res.json();
+        if (!data.access_token) { errEl.textContent = 'Unexpected server response.'; return; }
+        setToken(data.access_token);
+        $('password').value = '';
+        showApp();
+        $('search-input').focus();
+      } catch (_) {
+        errEl.textContent = 'Network error. Is the API reachable?';
+      }
+    });
+
+    $('logout-btn').addEventListener('click', () => { setToken(null); showLogin(); });
+
+    // ----------------------------------------------------------------
+    // SEARCH
+    // ----------------------------------------------------------------
+    let cy = null;
+
+    function setStatus(msg) {
+      const box = $('status');
+      if (!msg) { box.classList.add('hidden'); return; }
+      box.querySelector('div').textContent = msg; // textContent = XSS-safe
+      box.classList.remove('hidden');
+    }
+
+    $('search-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const value = $('search-input').value.trim();
+      if (!value) return;
+      $('results').classList.add('hidden');
+      setStatus('Correlating...');
+      try {
+        const res = await fetch('/search?value=' + encodeURIComponent(value), {
+          headers: { 'Authorization': 'Bearer ' + token },
+        });
+        if (res.status === 401) { setToken(null); showLogin(); return; }
+        if (res.status === 404) { setStatus('No entity found for that value.'); return; }
+        if (!res.ok) { setStatus('Search failed (' + res.status + ').'); return; }
+        const data = await res.json();
+        setStatus(null);
+        render(data);
+      } catch (_) {
+        setStatus('Network error during search.');
+      }
+    });
+
+    // ----------------------------------------------------------------
+    // RENDER (all untrusted values via textContent / DOM APIs only)
+    // ----------------------------------------------------------------
+    function render(data) {
+      const m = meta(data.entity_type);
+
+      $('sum-value').textContent = data.normalized_value;
+      const typeBadge = $('sum-type');
+      typeBadge.textContent = m.label;
+      typeBadge.style.backgroundColor = m.color + '22';
+      typeBadge.style.color = m.color;
+
+      const cases = data.cases || [];
+      const connected = data.connected_entities || [];
+      $('sum-cases').textContent = String(cases.length);
+      $('sum-connected').textContent = String(connected.length);
+
+      // Connection strength: a transparent, data-derived heuristic.
+      // NOT a risk score. Combines total mentions and shared-case links.
+      const totalMentions = cases.reduce((s, c) => s + (c.mention_count || 0), 0);
+      const totalShared = connected.reduce((s, c) => s + (c.shared_case_count || 0), 0);
+      const raw = totalMentions + totalShared + connected.length + cases.length;
+      const pct = Math.max(6, Math.min(100, Math.round((raw / 30) * 100)));
+      $('strength-bar').style.width = pct + '%';
+      const lbl = pct >= 75 ? 'Very strong' : pct >= 50 ? 'Strong' : pct >= 25 ? 'Moderate' : 'Weak';
+      $('strength-label').textContent = lbl + ' (' + pct + '%)';
+
+      // Linked cases table.
+      const cb = $('cases-body');
+      cb.replaceChildren();
+      if (!cases.length) {
+        cb.appendChild(emptyRow(2, 'No linked cases.'));
+      } else {
+        cases.forEach((c) => {
+          const tr = document.createElement('tr');
+          tr.className = 'border-t border-line';
+          tr.appendChild(td('#' + c.case_id, 'px-3 py-2 font-mono'));
+          tr.appendChild(td(String(c.mention_count), 'px-3 py-2 text-right text-slate-400'));
+          cb.appendChild(tr);
+        });
+      }
+
+      // Connected entities table.
+      const eb = $('connected-body');
+      eb.replaceChildren();
+      if (!connected.length) {
+        eb.appendChild(emptyRow(3, 'No connected entities.'));
+      } else {
+        connected.forEach((c) => {
+          const cm = meta(c.entity_type);
+          const tr = document.createElement('tr');
+          tr.className = 'border-t border-line';
+          const typeCell = document.createElement('td');
+          typeCell.className = 'px-3 py-2';
+          const chip = document.createElement('span');
+          chip.className = 'rounded-full px-2 py-0.5 text-[11px] font-medium';
+          chip.style.backgroundColor = cm.color + '22';
+          chip.style.color = cm.color;
+          chip.textContent = cm.label;
+          typeCell.appendChild(chip);
+          tr.appendChild(typeCell);
+          tr.appendChild(td(c.normalized_value, 'px-3 py-2 font-mono break-all'));
+          tr.appendChild(td(String(c.shared_case_count), 'px-3 py-2 text-right text-slate-400'));
+          eb.appendChild(tr);
+        });
+      }
+
+      $('results').classList.remove('hidden');
+      renderGraph(data, m);
+    }
+
+    function td(text, cls) {
+      const el = document.createElement('td');
+      el.className = cls;
+      el.textContent = text; // XSS-safe
+      return el;
+    }
+    function emptyRow(span, text) {
+      const tr = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = span;
+      cell.className = 'px-3 py-4 text-center text-slate-500';
+      cell.textContent = text;
+      tr.appendChild(cell);
+      return tr;
+    }
+
+    // ----------------------------------------------------------------
+    // GRAPH (Cytoscape). Queried entity at center; cases + connected
+    // entities as surrounding nodes. Degrades gracefully if CDN fails.
+    // ----------------------------------------------------------------
+    function renderGraph(data, m) {
+      const cyDiv = $('cy');
+      const fb = $('graph-fallback');
+      if (window.__cytoscapeFailed || typeof cytoscape === 'undefined') {
+        cyDiv.classList.add('hidden');
+        fb.classList.remove('hidden');
+        return;
+      }
+      fb.classList.add('hidden');
+      cyDiv.classList.remove('hidden');
+
+      const elements = [];
+      const rootId = 'root';
+      elements.push({ data: { id: rootId, label: data.normalized_value, color: m.color, kind: 'root', detail: m.label + ' \u2022 ' + data.normalized_value } });
+
+      (data.cases || []).forEach((c) => {
+        const id = 'case-' + c.case_id;
+        elements.push({ data: { id, label: '#' + c.case_id, color: '#64748b', kind: 'case', detail: 'Case #' + c.case_id + ' \u2022 ' + c.mention_count + ' mention(s)' } });
+        elements.push({ data: { id: 'e-' + id, source: rootId, target: id, weight: c.mention_count || 1 } });
+      });
+
+      (data.connected_entities || []).forEach((c) => {
+        const cm = meta(c.entity_type);
+        const id = 'ent-' + c.entity_id;
+        elements.push({ data: { id, label: c.normalized_value, color: cm.color, kind: 'entity', detail: cm.label + ' \u2022 ' + c.normalized_value + ' \u2022 shares ' + c.shared_case_count + ' case(s)' } });
+        elements.push({ data: { id: 'e-' + id, source: rootId, target: id, weight: c.shared_case_count || 1 } });
+      });
+
+      if (cy) { cy.destroy(); cy = null; }
+      cy = cytoscape({
+        container: cyDiv,
+        elements,
+        style: [
+          { selector: 'node', style: {
+              'background-color': 'data(color)',
+              'label': 'data(label)',
+              'color': '#e2e8f0',
+              'font-size': '9px',
+              'font-family': 'ui-monospace, monospace',
+              'text-valign': 'bottom',
+              'text-margin-y': 4,
+              'text-max-width': '120px',
+              'text-wrap': 'ellipsis',
+              'width': 26, 'height': 26,
+              'border-width': 2,
+              'border-color': '#0a0e14',
+          }},
+          { selector: 'node[kind = "root"]', style: { 'width': 46, 'height': 46, 'font-size': '11px', 'font-weight': 'bold' }},
+          { selector: 'node[kind = "case"]', style: { 'shape': 'round-rectangle' }},
+          { selector: 'edge', style: {
+              'width': 'mapData(weight, 1, 10, 1, 5)',
+              'line-color': '#1f2937',
+              'curve-style': 'bezier',
+              'opacity': 0.8,
+          }},
+          { selector: '.focused', style: { 'border-color': '#38bdf8', 'border-width': 4 }},
+          { selector: '.faded', style: { 'opacity': 0.15 }},
+        ],
+        layout: { name: 'concentric', concentric: (n) => n.data('kind') === 'root' ? 3 : n.data('kind') === 'entity' ? 2 : 1, levelWidth: () => 1, minNodeSpacing: 40, animate: true, animationDuration: 400 },
+        wheelSensitivity: 0.2,
+      });
+
+      const detail = $('node-detail');
+      cy.on('tap', 'node', (evt) => {
+        const n = evt.target;
+        cy.elements().addClass('faded');
+        n.removeClass('faded'); n.neighborhood().removeClass('faded');
+        cy.nodes().removeClass('focused'); n.addClass('focused');
+        detail.textContent = n.data('detail') || n.data('label');
+        detail.classList.remove('hidden');
+      });
+      cy.on('tap', (evt) => {
+        if (evt.target === cy) {
+          cy.elements().removeClass('faded'); cy.nodes().removeClass('focused');
+          detail.classList.add('hidden');
+        }
+      });
+      $('graph-fit').onclick = () => cy && cy.fit(undefined, 40);
+    }
+
+    // ----------------------------------------------------------------
+    // Boot: resume session if a token is present.
+    // ----------------------------------------------------------------
+    if (token) showApp(); else showLogin();
+  })();
+  </script>
+</body>
+</html>
