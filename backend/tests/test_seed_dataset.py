@@ -154,15 +154,30 @@ def test_highest_risk_cluster_is_ranked_first(seeded_db: Session) -> None:
 
 def test_correlation_links_shared_upi_across_cases(seeded_db: Session) -> None:
     """
-    Searching the shared UPI resolves to one entity linked to all 8 cases
-    of Cluster A, and surfaces connected entities (the demo's core value).
+    Searching the shared UPI resolves to one entity linked to the cases
+    that DIRECTLY contain it, and surfaces connected entities.
+
+    NOTE the direct-vs-transitive distinction this test pins down:
+    the UPI `kycupdate@ybl` appears verbatim in only 5 of Cluster A's 8
+    cases (1, 2, 3, 6, 7). The other 3 cases (4, 5, 8) join the *cluster*
+    transitively, via the shared phone and collection account -- a
+    relationship discovered by clustering (union-find), not by a direct
+    occurrence lookup. So correlation correctly reports 5 here; the full
+    8-case network is asserted separately in the clustering test. Those
+    connecting entities must still show up in `connected_entities`.
     """
     result = correlation.correlate(seeded_db, value=seed_synthetic._A_UPI)
     assert result is not None
     assert result.entity_type == EntityType.UPI
-    assert len(result.cases) == 8
-    # The shared phones/account in the ring must show up as connected.
-    assert result.connected_entities, "expected co-occurring entities"
+    # 5 cases contain the UPI directly (not the full 8-case cluster).
+    assert len(result.cases) == 5
+
+    # The transitive links (shared phone + account) must surface as
+    # connected entities -- that is what lets an investigator pivot from
+    # the UPI to the wider network.
+    connected_types = {c.entity_type for c in result.connected_entities}
+    assert EntityType.PHONE in connected_types
+    assert EntityType.BANK_ACCOUNT in connected_types
 
 
 def test_correlation_unknown_value_returns_none(seeded_db: Session) -> None:
