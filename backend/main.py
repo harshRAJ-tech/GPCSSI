@@ -17,6 +17,7 @@ from app.core.init_db import init_db
 from app.api.routes import auth as auth_routes
 from app.api.routes import case_extract as case_extract_routes
 from app.api.routes import cases as cases_routes
+from app.api.routes import clusters as clusters_routes
 from app.api.routes import entities as entities_routes
 from app.api.routes import evidence as evidence_routes
 from app.api.routes import search as search_routes
@@ -42,6 +43,7 @@ app.include_router(cases_routes.router)
 app.include_router(case_extract_routes.router)
 app.include_router(entities_routes.router)
 app.include_router(search_routes.router)
+app.include_router(clusters_routes.router)
 app.include_router(evidence_routes.router)
 
 
