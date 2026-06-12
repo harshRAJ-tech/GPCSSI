@@ -9,6 +9,9 @@
 # - The job's own rules explicitly opt it INTO merge_request pipelines
 #   (a job with no rules does NOT run in MR pipelines, which previously
 #   produced an empty -> failed pipeline).
+# - DATABASE_URL/SECRET_KEY are DUMMY values: the fail-closed config
+#   requires them at import time, but the pure tests never open a
+#   connection, so a placeholder URL is sufficient and no DB is needed.
 
 workflow:
   rules:
@@ -24,6 +27,10 @@ backend-tests:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  variables:
+    # Placeholders so settings load; tests never connect to this DB.
+    DATABASE_URL: "postgresql+psycopg://ci:ci@localhost:5432/ci"
+    SECRET_KEY: "ci-test-secret-not-used-for-real-auth"
   before_script:
     - cd backend
     - python -m pip install --upgrade pip
