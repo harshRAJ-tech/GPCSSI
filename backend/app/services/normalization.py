@@ -37,11 +37,21 @@ def _normalize_domain(value: str) -> str:
 
 
 def _normalize_url(value: str) -> str:
-    """Lowercase scheme/host, strip a trailing slash, drop 'www.'."""
+    """
+    Canonicalize a URL: lowercase the scheme AND host (case-insensitive
+    per RFC 3986), strip a leading 'www.', and drop a trailing slash.
+    The path is left case-sensitive and untouched.
+    """
     url = value.strip()
-    url = re.sub(r"^(https?://)", lambda m: m.group(1).lower(), url, count=1)
-    url = re.sub(r"^(https?://)www\.", r"\1", url, count=1)
-    return url.rstrip("/")
+    match = re.match(r"^(https?://)([^/]*)(.*)$", url, flags=re.IGNORECASE)
+    if match is None:
+        return url.rstrip("/")
+    scheme, host, rest = match.groups()
+    scheme = scheme.lower()
+    host = host.lower()
+    if host.startswith("www."):
+        host = host[4:]
+    return f"{scheme}{host}{rest}".rstrip("/")
 
 
 def normalize(entity_type: EntityType, value: str) -> str:
