@@ -23,3 +23,12 @@ class CorrelationOut(BaseModel):
     normalized_value: str
     cases: list[CaseLinkOut]
     connected_entities: list[ConnectedEntityOut]
+
+
+class EntityExpansionOut(BaseModel):
+    """One entity expanded into its connected entities (for graph drill-down)."""
+
+    entity_id: int
+    entity_type: EntityType
+    normalized_value: str
+    connected_entities: list[ConnectedEntityOut]
