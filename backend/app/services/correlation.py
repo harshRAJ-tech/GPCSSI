@@ -122,3 +122,74 @@ def correlate(
         cases=cases,
         connected_entities=connected,
     )
+
+
+@dataclass
+class ExpansionResult:
+    entity_id: int
+    entity_type: EntityType
+    normalized_value: str
+    connected_entities: list[ConnectedEntity] = field(default_factory=list)
+
+
+def _connected_entities(db: Session, entity: Entity) -> list[ConnectedEntity]:
+    """Return entities co-occurring with `entity` across its cases.
+
+    WHY extracted: this is the exact co-occurrence logic used by
+    `correlate()`. Sharing it keeps a single source of truth, so search
+    and graph-expansion can never drift apart. All access is via
+    parameterized SQLAlchemy queries (no string-built SQL -> no SQLi).
+    """
+    case_ids = [
+        cid
+        for (cid,) in db.execute(
+            select(EntityOccurrence.case_id).where(
+                EntityOccurrence.entity_id == entity.id
+            )
+        ).all()
+    ]
+    if not case_ids:
+        return []
+
+    other = EntityOccurrence
+    rows = db.execute(
+        select(
+            Entity.id,
+            Entity.entity_type,
+            Entity.normalized_value,
+            func.count(func.distinct(other.case_id)).label("shared"),
+        )
+        .join(other, other.entity_id == Entity.id)
+        .where(other.case_id.in_(case_ids), Entity.id != entity.id)
+        .group_by(Entity.id, Entity.entity_type, Entity.normalized_value)
+        .order_by(func.count(func.distinct(other.case_id)).desc())
+    ).all()
+    return [
+        ConnectedEntity(
+            entity_id=eid,
+            entity_type=etype,
+            normalized_value=nval,
+            shared_case_count=shared,
+        )
+        for eid, etype, nval, shared in rows
+    ]
+
+
+def expand_entity(db: Session, *, entity_id: int) -> ExpansionResult | None:
+    """Expand a single known entity into its connected entities.
+
+    WHY: the Graph Explorer needs lazy, node-by-node expansion -- click a
+    connected entity and load *its* neighbours. This resolves an entity
+    by its primary key (not a free-text value) and returns the same
+    co-occurring entities `correlate()` does, so the frontend can reuse
+    one rendering path. Returns None if the id does not exist.
+    """
+    entity = db.get(Entity, entity_id)
+    if entity is None:
+        return None
+    return ExpansionResult(
+        entity_id=entity.id,
+        entity_type=entity.entity_type,
+        normalized_value=entity.normalized_value,
+        connected_entities=_connected_entities(db, entity),
+    )

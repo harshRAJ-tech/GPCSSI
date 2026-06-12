@@ -159,6 +159,50 @@ def test_search_unknown_value_returns_404(client: TestClient) -> None:
     assert resp.status_code == 404
 
 
+# --- Entity expansion (graph drill-down) ----------------------------------
+
+def test_expand_requires_authentication(client: TestClient) -> None:
+    """No token -> 401, before any business logic runs."""
+    resp = client.get("/search/expand/1")
+    assert resp.status_code == 401
+
+
+def test_expand_known_entity_returns_connected(client: TestClient) -> None:
+    """Expanding a known entity returns its co-occurring entities.
+
+    We first resolve the shared UPI via /search to obtain its entity_id,
+    then expand that id -- proving the two endpoints agree on the same
+    entity and connection set.
+    """
+    headers = _auth_header(client)
+    found = client.get(
+        "/search", params={"value": seed_synthetic._A_UPI}, headers=headers
+    ).json()
+    entity_id = found["entity_id"]
+
+    resp = client.get(f"/search/expand/{entity_id}", headers=headers)
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["entity_id"] == entity_id
+    assert body["entity_type"] == "upi"
+    assert body["normalized_value"] == seed_synthetic._A_UPI
+    # The expansion's connected set matches what /search reported.
+    assert len(body["connected_entities"]) == len(found["connected_entities"])
+
+
+def test_expand_unknown_id_returns_404(client: TestClient) -> None:
+    headers = _auth_header(client)
+    resp = client.get("/search/expand/999999", headers=headers)
+    assert resp.status_code == 404
+
+
+def test_expand_rejects_non_positive_id(client: TestClient) -> None:
+    """The ge=1 path constraint rejects 0 with a 422 validation error."""
+    headers = _auth_header(client)
+    resp = client.get("/search/expand/0", headers=headers)
+    assert resp.status_code == 422
+
+
 def test_search_rejects_empty_value(client: TestClient) -> None:
     """The min_length=1 query constraint yields a 422 validation error."""
     headers = _auth_header(client)
