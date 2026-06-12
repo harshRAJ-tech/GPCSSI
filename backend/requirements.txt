@@ -10,7 +10,12 @@ pydantic==2.10.4
 pydantic-settings==2.7.1
 
 # Password hashing for auth (bcrypt)
+# NOTE: passlib 1.7.4 (unmaintained) reads bcrypt.__about__.__version__,
+# which bcrypt removed in 4.1+, and bcrypt 5.x hard-errors on passlib's
+# internal >72-byte probe. Pin bcrypt < 4.1 so password hashing works.
+# Longer term, migrate off passlib (e.g. to argon2-cffi or bcrypt directly).
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
 
 # JWT encoding/decoding for stateless auth tokens
 PyJWT==2.10.1
