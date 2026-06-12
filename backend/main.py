@@ -7,8 +7,11 @@ dead database, rather than reporting healthy while the DB is down.
 The lifespan handler builds the schema on startup via create_all.
 """
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Depends
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -45,6 +48,18 @@ app.include_router(entities_routes.router)
 app.include_router(search_routes.router)
 app.include_router(clusters_routes.router)
 app.include_router(evidence_routes.router)
+
+# Serve the build-step-free investigator UI same-origin (no CORS needed).
+# WHY same-origin: the page calls /auth/login and /search directly; serving
+# it from the API avoids cross-origin config and keeps the JWT on one origin.
+_STATIC_DIR = Path(__file__).resolve().parent / "app" / "static"
+app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+
+
+@app.get("/", include_in_schema=False)
+def index() -> FileResponse:
+    """Serve the single-page investigator Search screen."""
+    return FileResponse(str(_STATIC_DIR / "index.html"))
 
 
 @app.get("/health")
