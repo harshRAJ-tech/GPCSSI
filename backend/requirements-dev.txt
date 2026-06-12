@@ -1,0 +1,4 @@
+# Development / test dependencies (kept separate from runtime requirements).
+-r requirements.txt
+
+pytest==8.3.4
