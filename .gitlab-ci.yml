@@ -1,20 +1,12 @@
 # File: .gitlab-ci.yml
-# Minimal CI: run the backend unit test suite.
+# Minimal CI: run the backend unit test suite on branch pushes.
 # The extraction/normalization tests are pure (no database), so this job
 # needs no services and stays fast.
-
-# WHY a workflow block: without it, GitLab can create BOTH a branch
-# pipeline and a merge-request pipeline for the same commit (duplicates),
-# or an empty pipeline that is marked failed. This rule runs exactly one
-# pipeline: a merge-request pipeline when an MR is open, otherwise a
-# branch pipeline for the default branch.
-workflow:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
-      when: never
-    - if: '$CI_COMMIT_BRANCH'
+#
+# Kept intentionally simple: a single branch pipeline with one job and no
+# rules/workflow gymnastics, which is the most reliable configuration for
+# a new project. (MR-only / changes-scoped rules can be reintroduced once
+# the pipeline is confirmed green.)
 
 stages:
   - test
@@ -22,14 +14,6 @@ stages:
 backend-tests:
   stage: test
   image: python:3.12-slim
-  cache:
-    key:
-      files:
-        - backend/requirements-dev.txt
-    paths:
-      - .cache/pip
-  variables:
-    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   before_script:
     - cd backend
     - python -m pip install --upgrade pip
