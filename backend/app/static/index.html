@@ -19,9 +19,15 @@
         move to a bundled SPA with a strict CSP + httpOnly cookie auth.
   -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    NOTE on SRI: a Subresource Integrity hash should be added here for
+    production, but it must be the REAL hash for this exact file. It is
+    intentionally omitted rather than guessed (a wrong hash silently
+    blocks the script). Tracked follow-up: pin + SRI, or self-host the
+    library so it is covered by a strict CSP.
+  -->
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"
-    integrity="sha512-uEcz7xKvuJ2iZB2Ms1n5g0n9lQUJVxR5pHkClC7l1Zb5xWuU3p+x3tJf2x2Z2x0d2Z2x0d2Z2x0d2Z2x0d2Zg=="
     crossorigin="anonymous"
     referrerpolicy="no-referrer"
     onerror="window.__cytoscapeFailed=true"
