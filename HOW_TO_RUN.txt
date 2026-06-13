@@ -1,0 +1,216 @@
+================================================================================
+  CYBER INVESTIGATION INTELLIGENCE PLATFORM
+  Step-by-step operating guide (beginner friendly, Windows)
+================================================================================
+
+This guide takes you from a fresh clone to a running app with the Search
+screen and live link graph, using fully synthetic (fake) demo data.
+
+Run every command from the "backend" folder unless told otherwise.
+
+LEGEND:
+  PowerShell  = the blue Windows PowerShell terminal
+  CMD         = the black Command Prompt terminal
+  Pick ONE terminal and use its matching commands where they differ.
+
+--------------------------------------------------------------------------------
+0. ONE-TIME PREREQUISITES
+--------------------------------------------------------------------------------
+  - Python 3.12+ installed.
+  - Docker Desktop installed and RUNNING (easiest way to get PostgreSQL).
+    (No Docker? See section 9 for the native PostgreSQL option.)
+
+--------------------------------------------------------------------------------
+1. OPEN A TERMINAL IN THE BACKEND FOLDER
+--------------------------------------------------------------------------------
+  cd D:\Police\backend
+
+--------------------------------------------------------------------------------
+2. CREATE & ACTIVATE A VIRTUAL ENVIRONMENT (first time only)
+--------------------------------------------------------------------------------
+  python -m venv .venv
+
+  PowerShell:   .venv\Scripts\Activate.ps1
+  CMD:          .venv\Scripts\activate.bat
+
+  You should now see "(.venv)" at the start of your prompt.
+  (Re-run the activate line every time you open a new terminal.)
+
+--------------------------------------------------------------------------------
+3. INSTALL DEPENDENCIES (first time, or after pulling new changes)
+--------------------------------------------------------------------------------
+  python -m pip install --upgrade pip
+  pip install -r requirements-dev.txt
+
+  (requirements-dev.txt includes the runtime deps PLUS test tools like
+   pytest and httpx, so this single command covers running AND testing.)
+
+--------------------------------------------------------------------------------
+4. START POSTGRESQL (the database) WITH DOCKER
+--------------------------------------------------------------------------------
+  First time (creates the container):
+
+    docker run --name ciip-db -e POSTGRES_USER=ciip -e POSTGRES_PASSWORD=ciip -e POSTGRES_DB=ciip -p 5432:5432 -d postgres:16
+
+  Later (the container already exists), just start/stop it:
+
+    docker start ciip-db
+    docker stop  ciip-db
+
+  Check it is running:
+
+    docker ps
+
+  WHY: the app is "fail-closed" -- it refuses to start without a real
+  database. That is intentional for a law-enforcement tool. The error
+  "connection to server at 127.0.0.1 port 5432 failed" simply means the
+  database is not running yet.
+
+--------------------------------------------------------------------------------
+5. CREATE YOUR .env FILE
+--------------------------------------------------------------------------------
+  Copy the example, then edit it:
+
+    copy .env.example .env
+
+  First, generate a strong secret key:
+
+    python -c "import secrets; print(secrets.token_urlsafe(64))"
+
+  Then open backend\.env in a text editor and set these two lines
+  (the DATABASE_URL below matches the Docker command in section 4):
+
+    DATABASE_URL=postgresql+psycopg://ciip:ciip@127.0.0.1:5432/ciip
+    SECRET_KEY=<paste the long random value you just generated>
+
+  Leave UPLOAD_DIR and MAX_UPLOAD_BYTES as they are.
+
+  SECURITY: never commit the real .env file. It is already git-ignored.
+
+--------------------------------------------------------------------------------
+6. CREATE THE FIRST ADMIN USER
+--------------------------------------------------------------------------------
+  YOU choose the password here (minimum 12 characters). REMEMBER IT --
+  this is what you log in with. The password is read from an environment
+  variable so it never lands in your shell history or the repo.
+
+  PowerShell:
+    $env:SEED_ADMIN_PASSWORD="ChangeThisStrong123"
+    python -m scripts.seed_admin --username admin --full-name "Site Admin"
+
+  CMD:
+    set SEED_ADMIN_PASSWORD=ChangeThisStrong123
+    python -m scripts.seed_admin --username admin --full-name "Site Admin"
+
+  Expected output:  Created SYSTEM_ADMIN 'admin'.
+  (If you run it again it says the user already exists -- that is fine.)
+
+  >>> Your login will be:  username = admin   password = ChangeThisStrong123
+      (use whatever password you actually chose above)
+
+--------------------------------------------------------------------------------
+7. LOAD THE SYNTHETIC DEMO DATA
+--------------------------------------------------------------------------------
+  python -m scripts.seed_synthetic
+
+  This creates 28 FAKE cases that form 4 designed fraud networks. Every
+  value is fabricated -- never present this as real intelligence.
+  (The script is idempotent: run it again and it does nothing. To wipe
+   and reload, use:  python -m scripts.seed_synthetic --reset )
+
+--------------------------------------------------------------------------------
+8. START THE APP
+--------------------------------------------------------------------------------
+  uvicorn main:app --reload
+
+  Then open your browser at:
+
+    http://localhost:8000
+
+  Log in with the admin username/password from section 6.
+  To stop the server: press  Ctrl + C  in the terminal.
+
+--------------------------------------------------------------------------------
+  TRY THESE SEARCHES (real values from the synthetic dataset)
+--------------------------------------------------------------------------------
+  Paste any of these into the Search box to see linked cases, connected
+  entities, and the interactive graph. The first one is the best demo --
+  it ties the whole KYC/UPI scam ring together.
+
+    Cluster A (KYC / UPI scam ring -- STRONGEST DEMO):
+      kycupdate@ybl                      (UPI)
+      9810012345                         (phone)
+      9810054321                         (phone)
+      402100123456                       (bank account)
+
+    Cluster B (digital-arrest gang):
+      9733088990                         (phone)
+      915500778899                       (mule account)
+      HDFC0001234                        (IFSC)
+
+    Cluster C (loan-app fraud):
+      https://quick-rupee-loan.in/app    (domain)
+      @quickrupeesupport                 (Telegram)
+
+    Cluster D (crypto investment scam):
+      0x9f8e7d6c5b4a39281706f5e4d3c2b1a098765432   (ETH wallet)
+
+  In the graph: click a node to focus its neighbourhood; click empty
+  space to reset; use the "Fit" button to recentre.
+
+--------------------------------------------------------------------------------
+9. NO DOCKER? NATIVE POSTGRESQL OPTION
+--------------------------------------------------------------------------------
+  1. Install PostgreSQL 16 from https://www.postgresql.org/download/windows/
+  2. During install, set a password for the "postgres" user and remember it.
+  3. Open "SQL Shell (psql)" and run:
+        CREATE DATABASE ciip;
+        CREATE USER ciip WITH PASSWORD 'ciip';
+        GRANT ALL PRIVILEGES ON DATABASE ciip TO ciip;
+  4. Use the same DATABASE_URL as in section 5.
+
+--------------------------------------------------------------------------------
+10. RUN THE TESTS (proves the backend logic works)
+--------------------------------------------------------------------------------
+  The test suite uses its own throwaway in-memory database, so it does
+  NOT need Docker or PostgreSQL running:
+
+    pytest -q
+
+  Expected: all tests pass (currently 100 passed).
+
+--------------------------------------------------------------------------------
+11. COMMON PROBLEMS & FIXES
+--------------------------------------------------------------------------------
+  "connection to server at 127.0.0.1 port 5432 failed"
+     -> PostgreSQL is not running. Run:  docker start ciip-db
+
+  "No module named 'httpx'" when running pytest
+     -> Dependencies not installed in this venv. Run:
+        pip install -r requirements-dev.txt
+
+  "(.venv)" is missing from your prompt
+     -> The virtual environment is not active. Re-run the activate line
+        from section 2.
+
+  PowerShell blocks .venv\Scripts\Activate.ps1 (execution policy)
+     -> Run this once, then try activating again:
+        Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
+  Port 8000 already in use
+     -> Run on another port:  uvicorn main:app --reload --port 8001
+        then open http://localhost:8001
+
+  Login fails
+     -> Make sure you ran section 6 (seed_admin) AND are using the exact
+        username/password you set there.
+
+--------------------------------------------------------------------------------
+QUICK START (after the first-time setup is done)
+--------------------------------------------------------------------------------
+  cd D:\Police\backend
+  .venv\Scripts\Activate.ps1          (PowerShell)  or  .venv\Scripts\activate.bat (CMD)
+  docker start ciip-db
+  uvicorn main:app --reload
+  # open http://localhost:8000
+================================================================================
