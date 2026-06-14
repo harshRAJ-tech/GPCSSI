@@ -10,22 +10,25 @@ session tokens. The signing key comes from settings (env), never source.
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 
 from app.core.config import settings
 
-# bcrypt with passlib. 'deprecated=auto' lets us migrate schemes later.
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+_ph = PasswordHasher()
 
 
 def hash_password(plain_password: str) -> str:
-    """Return a bcrypt hash. The plaintext is never stored anywhere."""
-    return _pwd_context.hash(plain_password)
+    """Return an argon2 hash. The plaintext is never stored anywhere."""
+    return _ph.hash(plain_password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Constant-time verification of a password against its stored hash."""
-    return _pwd_context.verify(plain_password, hashed_password)
+    try:
+        return _ph.verify(hashed_password, plain_password)
+    except VerifyMismatchError:
+        return False
 
 
 def create_access_token(subject: str) -> str:

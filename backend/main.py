@@ -27,6 +27,14 @@ from app.api.routes import search as search_routes
 from app.api.routes import users as users_routes
 
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+
+from app.core.rate_limit import limiter
+
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Build any missing tables before serving requests (idempotent).
@@ -39,6 +47,11 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+# Register rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 app.include_router(auth_routes.router)
 app.include_router(users_routes.router)
@@ -67,3 +80,8 @@ def health(db: Session = Depends(get_db)) -> dict[str, str]:
     """Liveness + DB connectivity check."""
     db.execute(text("SELECT 1"))
     return {"status": "ok"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)

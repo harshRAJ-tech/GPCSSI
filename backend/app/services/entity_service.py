@@ -16,7 +16,8 @@ from sqlalchemy.orm import Session
 from app.models.entity import Entity
 from app.models.entity_occurrence import EntityOccurrence
 from app.models.enums import EntityType
-from app.services import extraction, normalization
+from app.services import extraction, normalization, graph_service
+from app.core.neo4j_db import _driver as neo4j_driver
 
 
 def get_or_create(
@@ -111,6 +112,8 @@ def extract_and_store(
         raw_for_key.setdefault(key, extracted.raw_value)
 
     entities: list[Entity] = []
+    entities_with_mentions: list[tuple[Entity, int]] = []
+    
     for (entity_type, _normalized), mentions in counts.items():
         entity, _created = get_or_create(
             db, entity_type=entity_type, raw_value=raw_for_key[(entity_type, _normalized)]
@@ -125,5 +128,52 @@ def extract_and_store(
                 evidence_id=evidence_id,
                 mentions=mentions,
             )
+            entities_with_mentions.append((entity, mentions))
+
+    # Trigger Neo4j graph sync if we have a valid driver
+    if case_id is not None and neo4j_driver is not None and entities_with_mentions:
+        try:
+            with neo4j_driver.session() as session:
+                graph_service.sync_entities_for_case(
+                    session, case_id=case_id, entities_with_mentions=entities_with_mentions, evidence_id=evidence_id
+                )
+        except Exception as e:
+            # We log the error but don't fail the PostgreSQL transaction
+            import logging
+            logging.getLogger(__name__).error("Neo4j sync failed: %s", e)
 
     return entities
+
+
+def re_extract_for_evidence(
+    db: Session,
+    *,
+    text: str,
+    case_id: int,
+    evidence_id: int,
+) -> list[Entity]:
+    """
+    Clear existing entity links for this evidence, then re-extract from text.
+    
+    This is used when an investigator manually corrects OCR extraction text.
+    Entities that were previously linked to this evidence but no longer appear
+    in the corrected text will lose their link (by design).
+    """
+    from sqlalchemy import delete
+    
+    # 1. Clear old occurrences specifically tied to this evidence file
+    stmt = delete(EntityOccurrence).where(EntityOccurrence.evidence_id == evidence_id)
+    db.execute(stmt)
+    db.flush()
+    
+    # 1.5 Remove old edges from Neo4j
+    if neo4j_driver is not None:
+        try:
+            with neo4j_driver.session() as session:
+                graph_service.remove_evidence_links(session, evidence_id=evidence_id)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error("Neo4j evidence cleanup failed: %s", e)
+    
+    # 2. Extract and store using the corrected text
+    return extract_and_store(db, text=text, case_id=case_id, evidence_id=evidence_id)

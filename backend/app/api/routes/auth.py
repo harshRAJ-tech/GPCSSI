@@ -13,15 +13,20 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.security import create_access_token, verify_password
-from app.models.enums import AuditAction
+from app.models.enums import AuditAction, UserRole
 from app.models.user import User
-from app.schemas.auth import TokenResponse
+from app.schemas.auth import TokenResponse, RegisterRequest
 from app.services import audit
+from app.services.user_service import create_user, UsernameTaken
+
+# Import the global limiter
+from app.core.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=TokenResponse)
+@limiter.limit("5/minute")
 def login(
     request: Request,
     form: OAuth2PasswordRequestForm = Depends(),
@@ -55,6 +60,42 @@ def login(
         action=AuditAction.LOGIN,
         user_id=user.id,
         target_ref="login:success",
+        source_ip=request.client.host if request.client else None,
+    )
+    db.commit()
+
+    return TokenResponse(access_token=create_access_token(str(user.id)))
+
+
+@router.post("/register", response_model=TokenResponse)
+@limiter.limit("5/minute")
+def register(
+    request: Request,
+    payload: RegisterRequest,
+    db: Session = Depends(get_db),
+) -> TokenResponse:
+    """[DEV ONLY] Register a new user and return a bearer token."""
+    try:
+        # Defaulting to INVESTIGATION_OFFICER for self-registered users
+        user = create_user(
+            db,
+            username=payload.username,
+            full_name=payload.full_name,
+            password=payload.password,
+            role=UserRole.INVESTIGATION_OFFICER
+        )
+        db.commit()
+    except UsernameTaken:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists"
+        )
+        
+    audit.record(
+        db,
+        action=AuditAction.LOGIN,
+        user_id=user.id,
+        target_ref="register:success",
         source_ip=request.client.host if request.client else None,
     )
     db.commit()

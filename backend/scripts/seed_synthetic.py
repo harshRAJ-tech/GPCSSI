@@ -1,4 +1,5 @@
-# File: backend/scripts/seed_synthetic.py
+import os, sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 """
 Seed a fully synthetic cybercrime dataset for demos and testing.
 

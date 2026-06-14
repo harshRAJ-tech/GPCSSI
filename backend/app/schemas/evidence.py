@@ -17,3 +17,22 @@ class EvidenceResponse(BaseModel):
     sha256: str
     uploaded_by: int
     uploaded_at: datetime
+    extracted_text: str | None = None
+
+
+class ExtractedTextUpdate(BaseModel):
+    extracted_text: str
+    
+
+class LinkedEntityOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    entity_id: int
+    entity_type: str
+    normalized_value: str
+    raw_value: str
+    mention_count: int
+
+
+class EvidenceDetailResponse(EvidenceResponse):
+    linked_entities: list[LinkedEntityOut]

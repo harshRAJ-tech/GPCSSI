@@ -53,3 +53,4 @@ class AuditAction(str, enum.Enum):
     VIEW_ENTITY = "view_entity"
     SEARCH = "search"
     EXPORT_REPORT = "export_report"
+    EDIT_EVIDENCE_TEXT = "edit_evidence_text"

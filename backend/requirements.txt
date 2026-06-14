@@ -9,16 +9,23 @@ psycopg[binary]==3.2.3
 pydantic==2.10.4
 pydantic-settings==2.7.1
 
-# Password hashing for auth (bcrypt)
-# NOTE: passlib 1.7.4 (unmaintained) reads bcrypt.__about__.__version__,
-# which bcrypt removed in 4.1+, and bcrypt 5.x hard-errors on passlib's
-# internal >72-byte probe. Pin bcrypt < 4.1 so password hashing works.
-# Longer term, migrate off passlib (e.g. to argon2-cffi or bcrypt directly).
-passlib[bcrypt]==1.7.4
-bcrypt==4.0.1
+# Password hashing for auth (argon2)
+argon2-cffi==23.1.0
+
+# Rate limiting
+slowapi==0.1.9
 
 # JWT encoding/decoding for stateless auth tokens
 PyJWT==2.10.1
 
 # Multipart form parsing, required by FastAPI for file uploads
 python-multipart==0.0.20
+
+# OCR and PDF parsing
+pymupdf==1.25.1
+easyocr==1.7.2
+opencv-python-headless==4.10.0.84
+
+# Graph Database Driver
+neo4j==5.26.0
+

@@ -17,6 +17,10 @@ import argparse
 import os
 import sys
 
+# Ensure Python can find the 'app' module when running the script directly
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+
 from app.core.database import SessionLocal
 from app.core.init_db import init_db
 from app.models.enums import UserRole

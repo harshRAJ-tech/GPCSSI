@@ -10,7 +10,7 @@ malicious filename can never influence where the file lands on disk.
 """
 from datetime import datetime
 
-from sqlalchemy import String, Integer, DateTime, ForeignKey, func
+from sqlalchemy import String, Integer, DateTime, ForeignKey, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -45,5 +45,9 @@ class Evidence(Base):
     uploaded_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+    # Text extracted from the file via OCR/parsing. Nullable because
+    # extraction is run async or some files might contain no readable text.
+    extracted_text: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     case: Mapped["Case"] = relationship(back_populates="evidence")  # noqa: F821
