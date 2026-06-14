@@ -20,3 +20,7 @@ os.environ.setdefault(
     "DATABASE_URL", "postgresql+psycopg://test:test@localhost:5432/test"
 )
 os.environ.setdefault("SECRET_KEY", "test-secret-not-used-for-real-auth")
+
+# Disable rate limiting during tests so we don't hit the 5/minute login cap
+from main import app
+app.state.limiter.enabled = False

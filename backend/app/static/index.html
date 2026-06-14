@@ -103,124 +103,282 @@
       <p class="mt-4 text-[11px] leading-relaxed text-slate-500">
         Authorized personnel only. All actions are audited.
       </p>
+      <div class="mt-4 text-center text-xs">
+        <a href="#" id="toggle-register" class="text-accent hover:underline">Create a new account (Dev Only)</a>
+      </div>
+    </div>
+    
+    <!-- Registration Form (Hidden by default) -->
+    <div id="register-container" class="glass w-full max-w-md rounded-2xl border border-line p-8 fade-in shadow-2xl hidden">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-400 grid place-items-center text-ink font-black">CI</div>
+        <div>
+          <h1 class="text-lg font-semibold tracking-tight">Create Account</h1>
+          <p class="text-xs text-slate-400 -mt-0.5">Development Use Only</p>
+        </div>
+      </div>
+      <form id="register-form" class="space-y-4" autocomplete="off">
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Username</label>
+          <input id="reg-username" name="username" type="text" required
+            class="ring-glow w-full rounded-lg bg-panel2 border border-line px-3 py-2.5 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Full Name</label>
+          <input id="reg-fullname" name="fullname" type="text" required
+            class="ring-glow w-full rounded-lg bg-panel2 border border-line px-3 py-2.5 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Password</label>
+          <input id="reg-password" name="password" type="password" required minlength="8"
+            class="ring-glow w-full rounded-lg bg-panel2 border border-line px-3 py-2.5 text-sm" />
+        </div>
+        <button type="submit"
+          class="w-full rounded-lg bg-gradient-to-r from-emerald-400 to-teal-400 text-ink font-semibold py-2.5 text-sm hover:opacity-90 transition">
+          Register & Sign In
+        </button>
+        <p id="register-error" class="text-sm text-rose-400 min-h-[1.25rem]" role="alert"></p>
+      </form>
+      <div class="mt-4 text-center text-xs">
+        <a href="#" id="toggle-login" class="text-slate-400 hover:text-slate-200 transition">Back to Sign in</a>
+      </div>
     </div>
   </section>
+
 
   <!-- ============================ APP SHELL ============================ -->
   <main id="app-view" class="hidden min-h-screen flex flex-col">
     <!-- Top bar -->
     <header class="glass border-b border-line">
       <div class="mx-auto max-w-7xl px-5 h-14 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="h-7 w-7 rounded-lg bg-gradient-to-br from-accent to-accent2 grid place-items-center text-ink text-xs font-black">CI</div>
-          <span class="text-sm font-semibold tracking-tight">Search Center</span>
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-3">
+            <div class="h-7 w-7 rounded-lg bg-gradient-to-br from-accent to-accent2 grid place-items-center text-ink text-xs font-black">CI</div>
+            <span class="text-sm font-semibold tracking-tight">CIIP Platform</span>
+          </div>
+          <nav class="flex gap-2">
+            <button id="nav-search-btn" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-panel border border-accent text-accent transition">Search Center</button>
+            <button id="nav-dash-btn" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition">Dashboard & Uploads</button>
+          </nav>
         </div>
         <button id="logout-btn" class="text-xs text-slate-400 hover:text-slate-200 transition">Sign out</button>
       </div>
     </header>
 
-    <!-- Search bar -->
-    <div class="mx-auto max-w-7xl w-full px-5 pt-6">
-      <form id="search-form" class="flex gap-2">
-        <div class="relative flex-1">
-          <input id="search-input" type="text" required maxlength="512"
-            placeholder="Search a phone, UPI, bank account, IFSC, UTR, email, wallet..."
-            class="ring-glow w-full rounded-xl bg-panel2 border border-line pl-11 pr-4 py-3 text-sm" />
-          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
-          </svg>
+    <!-- ============================ SEARCH VIEW ============================ -->
+    <div id="search-view" class="flex flex-col flex-1">
+      <!-- Search bar -->
+      <div class="mx-auto max-w-7xl w-full px-5 pt-6">
+        <form id="search-form" class="flex gap-2">
+          <div class="relative flex-1">
+            <input id="search-input" type="text" required maxlength="512"
+              placeholder="Search a phone, UPI, bank account, IFSC, UTR, email, wallet..."
+              class="ring-glow w-full rounded-xl bg-panel2 border border-line pl-11 pr-4 py-3 text-sm" />
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+          </div>
+          <button type="submit"
+            class="rounded-xl bg-gradient-to-r from-accent to-accent2 text-ink font-semibold px-6 text-sm hover:opacity-90 transition">
+            Search
+          </button>
+        </form>
+        <p class="mt-2 text-[11px] text-slate-500">Type is auto-detected. Values are normalized before correlation.</p>
+      </div>
+
+      <!-- Status / empty / error -->
+      <div id="status" class="mx-auto max-w-7xl w-full px-5 pt-6 hidden">
+        <div class="glass rounded-xl border border-line px-5 py-4 text-sm text-slate-300"></div>
+      </div>
+
+      <!-- Results -->
+      <section id="results" class="hidden mx-auto max-w-7xl w-full px-5 py-6 grid grid-cols-1 lg:grid-cols-5 gap-5 flex-1">
+        <!-- Left column: summary + tables -->
+        <div class="lg:col-span-2 space-y-5">
+          <!-- Entity summary -->
+          <div class="glass rounded-2xl border border-line p-5 fade-in">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-[11px] uppercase tracking-wide text-slate-400">Matched entity</p>
+                <h2 id="sum-value" class="text-xl font-semibold font-mono mt-0.5 break-all"></h2>
+              </div>
+              <span id="sum-type" class="shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold"></span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mt-5">
+              <div class="rounded-xl bg-panel2 border border-line p-3">
+                <p class="text-[11px] text-slate-400">Linked cases</p>
+                <p id="sum-cases" class="text-2xl font-bold mt-0.5">0</p>
+              </div>
+              <div class="rounded-xl bg-panel2 border border-line p-3">
+                <p class="text-[11px] text-slate-400">Connected entities</p>
+                <p id="sum-connected" class="text-2xl font-bold mt-0.5">0</p>
+              </div>
+            </div>
+            <!-- Connection strength: derived from data, NOT a risk score. -->
+            <div class="mt-4">
+              <div class="flex items-center justify-between">
+                <p class="text-[11px] text-slate-400">Connection strength <span class="text-slate-600">(derived from mentions &amp; shared cases)</span></p>
+                <span id="strength-label" class="text-[11px] font-semibold"></span>
+              </div>
+              <div class="mt-1.5 h-2 w-full rounded-full bg-panel2 overflow-hidden">
+                <div id="strength-bar" class="h-full rounded-full bg-gradient-to-r from-accent to-accent2 transition-all" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linked cases -->
+          <div class="glass rounded-2xl border border-line p-5 fade-in">
+            <h3 class="text-sm font-semibold mb-3">Linked cases</h3>
+            <div class="overflow-hidden rounded-xl border border-line">
+              <table class="w-full text-sm">
+                <thead class="bg-panel2 text-slate-400 text-[11px] uppercase tracking-wide">
+                  <tr><th class="text-left px-3 py-2">Case ID</th><th class="text-right px-3 py-2">Mentions</th></tr>
+                </thead>
+                <tbody id="cases-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Connected entities -->
+          <div class="glass rounded-2xl border border-line p-5 fade-in">
+            <h3 class="text-sm font-semibold mb-3">Connected entities</h3>
+            <div class="overflow-hidden rounded-xl border border-line">
+              <table class="w-full text-sm">
+                <thead class="bg-panel2 text-slate-400 text-[11px] uppercase tracking-wide">
+                  <tr><th class="text-left px-3 py-2">Type</th><th class="text-left px-3 py-2">Value</th><th class="text-right px-3 py-2">Shared</th></tr>
+                </thead>
+                <tbody id="connected-body"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <button type="submit"
-          class="rounded-xl bg-gradient-to-r from-accent to-accent2 text-ink font-semibold px-6 text-sm hover:opacity-90 transition">
-          Search
-        </button>
-      </form>
-      <p class="mt-2 text-[11px] text-slate-500">Type is auto-detected. Values are normalized before correlation.</p>
+
+        <!-- Right column: graph -->
+        <div class="lg:col-span-3">
+          <div class="glass rounded-2xl border border-line p-3 h-[640px] flex flex-col fade-in">
+            <div class="flex items-center justify-between px-2 py-1.5">
+              <h3 class="text-sm font-semibold">Link graph</h3>
+              <div class="flex items-center gap-2">
+                <button id="graph-fit" class="text-[11px] text-slate-400 hover:text-slate-200 border border-line rounded-md px-2 py-1">Fit</button>
+                <span class="text-[11px] text-slate-500">click a node to focus</span>
+              </div>
+            </div>
+            <div id="cy" class="flex-1 rounded-xl bg-ink/60 border border-line"></div>
+            <div id="graph-fallback" class="hidden flex-1 grid place-items-center text-sm text-slate-500">Graph library unavailable (offline). Tables above remain fully functional.</div>
+            <div id="node-detail" class="hidden mt-2 rounded-xl bg-panel2 border border-line px-3 py-2 text-xs"></div>
+          </div>
+        </div>
+      </section>
     </div>
 
-    <!-- Status / empty / error -->
-    <div id="status" class="mx-auto max-w-7xl w-full px-5 pt-6 hidden">
-      <div class="glass rounded-xl border border-line px-5 py-4 text-sm text-slate-300"></div>
-    </div>
-
-    <!-- Results -->
-    <section id="results" class="hidden mx-auto max-w-7xl w-full px-5 py-6 grid grid-cols-1 lg:grid-cols-5 gap-5 flex-1">
-      <!-- Left column: summary + tables -->
-      <div class="lg:col-span-2 space-y-5">
-        <!-- Entity summary -->
-        <div class="glass rounded-2xl border border-line p-5 fade-in">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <p class="text-[11px] uppercase tracking-wide text-slate-400">Matched entity</p>
-              <h2 id="sum-value" class="text-xl font-semibold font-mono mt-0.5 break-all"></h2>
-            </div>
-            <span id="sum-type" class="shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold"></span>
-          </div>
-          <div class="grid grid-cols-2 gap-3 mt-5">
-            <div class="rounded-xl bg-panel2 border border-line p-3">
-              <p class="text-[11px] text-slate-400">Linked cases</p>
-              <p id="sum-cases" class="text-2xl font-bold mt-0.5">0</p>
-            </div>
-            <div class="rounded-xl bg-panel2 border border-line p-3">
-              <p class="text-[11px] text-slate-400">Connected entities</p>
-              <p id="sum-connected" class="text-2xl font-bold mt-0.5">0</p>
-            </div>
-          </div>
-          <!-- Connection strength: derived from data, NOT a risk score. -->
-          <div class="mt-4">
-            <div class="flex items-center justify-between">
-              <p class="text-[11px] text-slate-400">Connection strength <span class="text-slate-600">(derived from mentions &amp; shared cases)</span></p>
-              <span id="strength-label" class="text-[11px] font-semibold"></span>
-            </div>
-            <div class="mt-1.5 h-2 w-full rounded-full bg-panel2 overflow-hidden">
-              <div id="strength-bar" class="h-full rounded-full bg-gradient-to-r from-accent to-accent2 transition-all" style="width:0%"></div>
-            </div>
+    <!-- ============================ DASHBOARD & BATCH UPLOAD VIEW ============================ -->
+    <div id="dashboard-view" class="hidden flex-1 mx-auto max-w-7xl w-full px-5 py-6 flex flex-col gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        
+        <!-- Left Column: Case Creation (2/5 width) -->
+        <div class="lg:col-span-2 space-y-6">
+          <div class="glass rounded-2xl border border-line p-6 fade-in shadow-xl">
+            <h2 class="text-base font-bold text-accent mb-4 tracking-tight flex items-center gap-2">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              Open New Investigation Case
+            </h2>
+            <form id="create-case-form" class="space-y-4" autocomplete="off">
+              <div>
+                <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Case Title</label>
+                <input id="case-title" type="text" required placeholder="e.g., UPI KYC Fraud Scam Ring"
+                  class="ring-glow w-full rounded-lg bg-panel2 border border-line px-3 py-2.5 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Description / Notes</label>
+                <textarea id="case-desc" rows="4" placeholder="Enter initial complaint details, victim statements, or investigation overview..."
+                  class="ring-glow w-full rounded-lg bg-panel2 border border-line px-3 py-2.5 text-sm resize-none"></textarea>
+              </div>
+              <button type="submit"
+                class="w-full rounded-lg bg-gradient-to-r from-accent to-accent2 text-ink font-semibold py-2.5 text-sm hover:opacity-90 transition">
+                Create Case
+              </button>
+              <p id="case-create-status" class="text-sm min-h-[1.25rem] mt-2" role="alert"></p>
+            </form>
           </div>
         </div>
 
-        <!-- Linked cases -->
-        <div class="glass rounded-2xl border border-line p-5 fade-in">
-          <h3 class="text-sm font-semibold mb-3">Linked cases</h3>
-          <div class="overflow-hidden rounded-xl border border-line">
-            <table class="w-full text-sm">
-              <thead class="bg-panel2 text-slate-400 text-[11px] uppercase tracking-wide">
-                <tr><th class="text-left px-3 py-2">Case ID</th><th class="text-right px-3 py-2">Mentions</th></tr>
-              </thead>
-              <tbody id="cases-body"></tbody>
-            </table>
-          </div>
-        </div>
+        <!-- Right Column: Multi-File Upload Panel (3/5 width) -->
+        <div class="lg:col-span-3 space-y-6">
+          <div class="glass rounded-2xl border border-line p-6 fade-in shadow-xl">
+            <h2 class="text-base font-bold text-accent mb-4 tracking-tight flex items-center gap-2">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+              </svg>
+              Evidence Upload Center
+            </h2>
+            
+            <div class="space-y-4">
+              <!-- Target Case Selection -->
+              <div>
+                <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Target Case ID (Required)</label>
+                <div class="relative">
+                  <input id="upload-case-id" type="number" required min="1" placeholder="Enter Case ID to attach evidence files"
+                    class="ring-glow w-full rounded-lg bg-panel2 border border-line pl-10 pr-3 py-2.5 text-sm font-mono" />
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-mono">#</span>
+                </div>
+              </div>
 
-        <!-- Connected entities -->
-        <div class="glass rounded-2xl border border-line p-5 fade-in">
-          <h3 class="text-sm font-semibold mb-3">Connected entities</h3>
-          <div class="overflow-hidden rounded-xl border border-line">
-            <table class="w-full text-sm">
-              <thead class="bg-panel2 text-slate-400 text-[11px] uppercase tracking-wide">
-                <tr><th class="text-left px-3 py-2">Type</th><th class="text-left px-3 py-2">Value</th><th class="text-right px-3 py-2">Shared</th></tr>
-              </thead>
-              <tbody id="connected-body"></tbody>
-            </table>
+              <!-- Drag and drop zone -->
+              <div id="drop-zone" class="border-2 border-dashed border-line rounded-xl p-8 text-center cursor-pointer hover:border-accent/50 transition bg-ink/30 relative">
+                <input type="file" id="file-input" multiple class="hidden" accept=".pdf,.png,.jpg,.jpeg,.csv,.xls,.xlsx" />
+                <div class="flex flex-col items-center gap-3">
+                  <svg class="h-10 w-10 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="12" y1="18" x2="12" y2="12"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                  </svg>
+                  <div>
+                    <p class="text-sm font-medium">Drag and drop files here, or <span class="text-accent underline">browse</span></p>
+                    <p class="text-xs text-slate-500 mt-1">Supports PDF, PNG, JPG, CSV, Excel (Max 25MB per file)</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Upload Queue List -->
+              <div id="queue-container" class="hidden space-y-3">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-xs uppercase tracking-wide text-slate-400">File Upload Queue</h3>
+                  <button id="clear-queue-btn" class="text-xs text-rose-400 hover:underline">Clear Queue</button>
+                </div>
+                <div class="max-h-60 overflow-y-auto border border-line rounded-xl divide-y divide-line bg-panel2/50">
+                  <div id="queue-list" class="divide-y divide-line"></div>
+                </div>
+                
+                <button id="start-upload-btn" class="w-full rounded-lg bg-gradient-to-r from-accent to-accent2 text-ink font-semibold py-2.5 text-sm hover:opacity-90 transition flex items-center justify-center gap-2">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                  </svg>
+                  Upload & Analyze Batch
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- NEW SECTION: Extraction Results -->
+          <div id="extraction-results-container" class="hidden glass rounded-2xl border border-line p-6 fade-in shadow-xl">
+            <h2 class="text-base font-bold text-accent mb-4 tracking-tight flex items-center gap-2">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              Extraction Results & Review
+            </h2>
+            <div id="extraction-list" class="space-y-4"></div>
           </div>
         </div>
       </div>
-
-      <!-- Right column: graph -->
-      <div class="lg:col-span-3">
-        <div class="glass rounded-2xl border border-line p-3 h-[640px] flex flex-col fade-in">
-          <div class="flex items-center justify-between px-2 py-1.5">
-            <h3 class="text-sm font-semibold">Link graph</h3>
-            <div class="flex items-center gap-2">
-              <button id="graph-fit" class="text-[11px] text-slate-400 hover:text-slate-200 border border-line rounded-md px-2 py-1">Fit</button>
-              <span class="text-[11px] text-slate-500">click a node to focus</span>
-            </div>
-          </div>
-          <div id="cy" class="flex-1 rounded-xl bg-ink/60 border border-line"></div>
-          <div id="graph-fallback" class="hidden flex-1 grid place-items-center text-sm text-slate-500">Graph library unavailable (offline). Tables above remain fully functional.</div>
-          <div id="node-detail" class="hidden mt-2 rounded-xl bg-panel2 border border-line px-3 py-2 text-xs"></div>
-        </div>
-      </div>
-    </section>
+    </div>
   </main>
 
   <script>
@@ -260,8 +418,51 @@
     const meta = (t) => TYPE_META[t] || { label: t || 'Unknown', color: '#94a3b8' };
 
     // ----------------------------------------------------------------
-    // LOGIN (form-encoded, per OAuth2PasswordRequestForm).
+    // LOGIN & REGISTRATION
     // ----------------------------------------------------------------
+    $('toggle-register').addEventListener('click', (e) => {
+      e.preventDefault();
+      $('login-view').querySelector('div.glass').classList.add('hidden');
+      $('register-container').classList.remove('hidden');
+    });
+
+    $('toggle-login').addEventListener('click', (e) => {
+      e.preventDefault();
+      $('register-container').classList.add('hidden');
+      $('login-view').querySelector('div.glass').classList.remove('hidden');
+    });
+
+    $('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = $('register-error');
+      errEl.textContent = '';
+      try {
+        const res = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: $('reg-username').value,
+            full_name: $('reg-fullname').value,
+            password: $('reg-password').value
+          }),
+        });
+        if (!res.ok) {
+          errEl.textContent = res.status === 409
+            ? 'Username already exists.'
+            : 'Registration failed (' + res.status + ').';
+          return;
+        }
+        const data = await res.json();
+        if (!data.access_token) { errEl.textContent = 'Unexpected server response.'; return; }
+        setToken(data.access_token);
+        $('reg-password').value = '';
+        showApp();
+        $('search-input').focus();
+      } catch (_) {
+        errEl.textContent = 'Network error. Is the API reachable?';
+      }
+    });
+
     $('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const errEl = $('login-error');
@@ -497,6 +698,504 @@
       });
       $('graph-fit').onclick = () => cy && cy.fit(undefined, 40);
     }
+
+    // ----------------------------------------------------------------
+    // DASHBOARD & CASE CREATION
+    // ----------------------------------------------------------------
+    const navSearchBtn = $('nav-search-btn');
+    const navDashBtn = $('nav-dash-btn');
+    const searchView = $('search-view');
+    const dashboardView = $('dashboard-view');
+
+    navSearchBtn.addEventListener('click', () => {
+      navSearchBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-panel border border-accent text-accent transition';
+      navDashBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition';
+      searchView.classList.remove('hidden');
+      dashboardView.classList.add('hidden');
+    });
+
+    navDashBtn.addEventListener('click', () => {
+      navDashBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-panel border border-accent text-accent transition';
+      navSearchBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition';
+      dashboardView.classList.remove('hidden');
+      searchView.classList.add('hidden');
+    });
+
+    $('create-case-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const statusEl = $('case-create-status');
+      statusEl.textContent = 'Creating case...';
+      statusEl.className = 'text-sm text-slate-400 mt-2';
+      
+      const title = $('case-title').value.trim();
+      const description = $('case-desc').value.trim();
+      
+      try {
+        const res = await fetch('/cases', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ title, description })
+        });
+        if (res.status === 401) { setToken(null); showLogin(); return; }
+        if (!res.ok) {
+          statusEl.textContent = 'Failed to create case (' + res.status + ').';
+          statusEl.className = 'text-sm text-rose-400 mt-2';
+          return;
+        }
+        const data = await res.json();
+        statusEl.textContent = 'Success! Case #' + data.id + ' created.';
+        statusEl.className = 'text-sm text-emerald-400 mt-2';
+        
+        // Auto-fill Case ID into evidence upload
+        $('upload-case-id').value = data.id;
+        $('case-title').value = '';
+        $('case-desc').value = '';
+      } catch (_) {
+        statusEl.textContent = 'Network error during case creation.';
+        statusEl.className = 'text-sm text-rose-400 mt-2';
+      }
+    });
+
+    // ----------------------------------------------------------------
+    // DRAG AND DROP / FILE UPLOAD QUEUE
+    // ----------------------------------------------------------------
+    let selectedFiles = [];
+
+    const dropZone = $('drop-zone');
+    const fileInput = $('file-input');
+    const queueContainer = $('queue-container');
+    const queueList = $('queue-list');
+    const startUploadBtn = $('start-upload-btn');
+    const clearQueueBtn = $('clear-queue-btn');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, e => e.preventDefault(), false);
+    });
+
+    dropZone.addEventListener('dragover', () => dropZone.classList.add('border-accent/80', 'bg-ink/50'));
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent/80', 'bg-ink/50'));
+    
+    dropZone.addEventListener('drop', e => {
+      dropZone.classList.remove('border-accent/80', 'bg-ink/50');
+      const dt = e.dataTransfer;
+      addFiles(dt.files);
+    });
+
+    fileInput.addEventListener('change', () => {
+      addFiles(fileInput.files);
+    });
+
+    function addFiles(files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (selectedFiles.some(f => f.file.name === file.name && f.file.size === file.size)) continue;
+        selectedFiles.push({
+          file: file,
+          status: 'pending',
+          progress: 0,
+          result: null,
+          errorMsg: null
+        });
+      }
+      renderQueue();
+    }
+
+    function renderQueue() {
+      if (selectedFiles.length === 0) {
+        queueContainer.classList.add('hidden');
+        queueList.replaceChildren();
+        return;
+      }
+      
+      queueContainer.classList.remove('hidden');
+      queueList.replaceChildren();
+      
+      selectedFiles.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'p-3 flex items-center justify-between text-xs border-b border-line last:border-0';
+        
+        const fileInfo = document.createElement('div');
+        fileInfo.className = 'flex flex-col gap-0.5 max-w-[70%]';
+        const name = document.createElement('span');
+        name.className = 'font-medium text-slate-300 break-all';
+        name.textContent = item.file.name;
+        const size = document.createElement('span');
+        size.className = 'text-[10px] text-slate-500 font-mono';
+        size.textContent = (item.file.size / 1024 / 1024).toFixed(2) + ' MB';
+        fileInfo.appendChild(name);
+        fileInfo.appendChild(size);
+        
+        const statusContainer = document.createElement('div');
+        statusContainer.className = 'flex items-center gap-2';
+        
+        const statusBadge = document.createElement('span');
+        statusBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-semibold';
+        
+        if (item.status === 'pending') {
+          statusBadge.textContent = 'Pending';
+          statusBadge.className += ' bg-slate-800 text-slate-400';
+        } else if (item.status === 'uploading') {
+          statusBadge.textContent = 'Uploading...';
+          statusBadge.className += ' bg-sky-950 text-sky-400 animate-pulse';
+        } else if (item.status === 'success') {
+          statusBadge.textContent = 'Success';
+          statusBadge.className += ' bg-emerald-950 text-emerald-400';
+          if (item.result) {
+            const count = document.createElement('span');
+            count.className = 'ml-1 text-[9px] px-1 bg-emerald-900/60 rounded text-slate-300 font-mono';
+            count.textContent = item.result.hash_short;
+            statusBadge.appendChild(count);
+          }
+        } else if (item.status === 'error') {
+          statusBadge.textContent = 'Error';
+          statusBadge.className += ' bg-rose-950 text-rose-400';
+          if (item.errorMsg) {
+            statusBadge.title = item.errorMsg;
+            statusBadge.style.cursor = 'help';
+          }
+        }
+        
+        statusContainer.appendChild(statusBadge);
+
+        if (item.status !== 'uploading') {
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'text-slate-500 hover:text-rose-400 transition ml-1';
+          removeBtn.innerHTML = `
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          `;
+          removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedFiles.splice(index, 1);
+            renderQueue();
+          });
+          statusContainer.appendChild(removeBtn);
+        }
+        
+        row.appendChild(fileInfo);
+        row.appendChild(statusContainer);
+        queueList.appendChild(row);
+      });
+    }
+
+    clearQueueBtn.addEventListener('click', () => {
+      if (selectedFiles.some(f => f.status === 'uploading')) return;
+      selectedFiles = [];
+      renderQueue();
+    });
+
+    startUploadBtn.addEventListener('click', async () => {
+      const caseIdInput = $('upload-case-id');
+      const caseId = caseIdInput.value.trim();
+      if (!caseId) {
+        alert('Please enter a target Case ID.');
+        caseIdInput.focus();
+        return;
+      }
+
+      if (selectedFiles.length === 0) return;
+      
+      startUploadBtn.disabled = true;
+      startUploadBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const item = selectedFiles[i];
+        if (item.status === 'success') continue;
+        
+        item.status = 'uploading';
+        renderQueue();
+        
+        const formData = new FormData();
+        formData.append('file', item.file);
+        
+        try {
+          const res = await fetch(`/cases/${caseId}/evidence`, {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + token
+            },
+            body: formData
+          });
+          
+          if (res.status === 401) {
+            setToken(null);
+            showLogin();
+            return;
+          }
+          
+          if (res.ok) {
+            const data = await res.json();
+            item.status = 'success';
+            item.result = {
+              id: data.id,
+              hash_short: data.sha256.substring(0, 8) + '...'
+            };
+          } else {
+            const errData = await res.json().catch(() => ({}));
+            item.status = 'error';
+            item.errorMsg = errData.detail || `Upload failed (${res.status})`;
+          }
+        } catch (err) {
+          item.status = 'error';
+          item.errorMsg = 'Network error or connection timed out.';
+        }
+        
+        renderQueue();
+      }
+      
+      startUploadBtn.disabled = false;
+      startUploadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      
+      // Fetch evidence list after batch upload finishes
+      fetchEvidenceList(caseId);
+    });
+
+    // ----------------------------------------------------------------
+    // EXTRACTION RESULTS REVIEW
+    // ----------------------------------------------------------------
+    async function fetchEvidenceList(caseId) {
+      const container = $('extraction-results-container');
+      const list = $('extraction-list');
+      list.innerHTML = '<div class="text-sm text-slate-400">Loading extraction results...</div>';
+      container.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`/cases/${caseId}/evidence`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.status === 401) { setToken(null); showLogin(); return; }
+        if (!res.ok) throw new Error('Failed to fetch evidence');
+        
+        const data = await res.json();
+        renderEvidenceList(data, caseId);
+      } catch (err) {
+        list.innerHTML = `<div class="text-sm text-rose-400">Error loading evidence: ${err.message}</div>`;
+      }
+    }
+
+    function renderEvidenceList(evidenceArray, caseId) {
+      const list = $('extraction-list');
+      list.replaceChildren();
+
+      if (!evidenceArray || evidenceArray.length === 0) {
+        list.innerHTML = '<div class="text-sm text-slate-400">No evidence attached to this case.</div>';
+        return;
+      }
+
+      evidenceArray.forEach(ev => {
+        const card = document.createElement('div');
+        card.className = 'rounded-xl border border-line bg-panel2/50 overflow-hidden';
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'px-4 py-3 bg-panel2 border-b border-line flex items-center justify-between';
+        header.innerHTML = `
+          <div>
+            <p class="text-sm font-semibold text-slate-200 break-all">${ev.original_filename}</p>
+            <p class="text-[10px] text-slate-500 font-mono mt-0.5">SHA-256: ${ev.sha256.substring(0, 16)}...</p>
+          </div>
+          <div class="text-[10px] text-slate-400 bg-ink/50 px-2 py-1 rounded border border-line">
+            ID: ${ev.id}
+          </div>
+        `;
+        card.appendChild(header);
+
+        // Body
+        const body = document.createElement('div');
+        body.className = 'p-4 space-y-4';
+
+        // Extracted Text section
+        const textSection = document.createElement('div');
+        
+        const textHeader = document.createElement('div');
+        textHeader.className = 'flex items-center justify-between mb-2';
+        
+        const textTitle = document.createElement('h3');
+        textTitle.className = 'text-xs uppercase tracking-wide text-slate-400';
+        textTitle.textContent = 'Extracted Text';
+        
+        const actionDiv = document.createElement('div');
+        actionDiv.className = 'flex items-center gap-2';
+        
+        const verifyBtn = document.createElement('button');
+        verifyBtn.className = 'text-[11px] px-2 py-1 rounded border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition flex items-center gap-1';
+        verifyBtn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Verify';
+        
+        const editBtn = document.createElement('button');
+        editBtn.className = 'text-[11px] px-2 py-1 rounded border border-slate-600 text-slate-300 hover:bg-slate-700 transition flex items-center gap-1';
+        editBtn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg> Edit';
+
+        actionDiv.appendChild(verifyBtn);
+        actionDiv.appendChild(editBtn);
+        textHeader.appendChild(textTitle);
+        textHeader.appendChild(actionDiv);
+        textSection.appendChild(textHeader);
+
+        // Read-only text display
+        const textDisplay = document.createElement('div');
+        textDisplay.className = 'text-sm text-slate-300 bg-ink p-3 rounded-lg border border-line whitespace-pre-wrap max-h-40 overflow-y-auto font-mono text-[11px]';
+        textDisplay.textContent = ev.extracted_text || '(No text extracted)';
+        textSection.appendChild(textDisplay);
+
+        // Edit form (hidden initially)
+        const editForm = document.createElement('div');
+        editForm.className = 'hidden space-y-2';
+        const textArea = document.createElement('textarea');
+        textArea.className = 'w-full rounded-lg bg-ink border border-accent/50 p-3 text-[11px] font-mono text-slate-300 focus:outline-none focus:ring-1 focus:ring-accent';
+        textArea.rows = 6;
+        textArea.value = ev.extracted_text || '';
+        
+        const formActions = document.createElement('div');
+        formActions.className = 'flex items-center gap-2 justify-end';
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'text-xs px-3 py-1.5 rounded text-slate-400 hover:text-slate-200 transition';
+        cancelBtn.textContent = 'Cancel';
+        
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'text-xs px-3 py-1.5 rounded bg-accent text-ink font-semibold hover:bg-accent2 transition';
+        saveBtn.textContent = 'Save & Re-extract';
+        
+        const editStatus = document.createElement('span');
+        editStatus.className = 'text-xs text-slate-400 mr-auto';
+
+        formActions.appendChild(editStatus);
+        formActions.appendChild(cancelBtn);
+        formActions.appendChild(saveBtn);
+        
+        editForm.appendChild(textArea);
+        editForm.appendChild(formActions);
+        textSection.appendChild(editForm);
+
+        // Entities Section
+        const entitySection = document.createElement('div');
+        const entityTitle = document.createElement('h3');
+        entityTitle.className = 'text-xs uppercase tracking-wide text-slate-400 mb-2 mt-4 border-t border-line pt-4';
+        entityTitle.textContent = 'Extracted Entities';
+        entitySection.appendChild(entityTitle);
+
+        const entityList = document.createElement('div');
+        entityList.className = 'flex flex-wrap gap-2';
+        
+        function renderEntities(entities) {
+          entityList.replaceChildren();
+          if (!entities || entities.length === 0) {
+            const empty = document.createElement('span');
+            empty.className = 'text-[11px] text-slate-500 italic';
+            empty.textContent = 'No entities found.';
+            entityList.appendChild(empty);
+            return;
+          }
+          
+          entities.forEach(ent => {
+            const cm = meta(ent.entity_type);
+            const chip = document.createElement('div');
+            chip.className = 'flex items-center text-[11px] rounded-md border border-line overflow-hidden bg-ink';
+            
+            const typeBadge = document.createElement('span');
+            typeBadge.className = 'px-2 py-1 font-semibold';
+            typeBadge.style.backgroundColor = cm.color + '22';
+            typeBadge.style.color = cm.color;
+            typeBadge.textContent = cm.label;
+            
+            const valBadge = document.createElement('span');
+            valBadge.className = 'px-2 py-1 font-mono text-slate-300 border-l border-line';
+            valBadge.textContent = ent.normalized_value;
+            
+            chip.appendChild(typeBadge);
+            chip.appendChild(valBadge);
+            entityList.appendChild(chip);
+          });
+        }
+        
+        renderEntities(ev.linked_entities);
+        entitySection.appendChild(entityList);
+
+        // Interaction logic
+        verifyBtn.onclick = () => {
+          verifyBtn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified';
+          verifyBtn.className = 'text-[11px] px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 flex items-center gap-1 font-semibold';
+          editBtn.classList.add('hidden');
+        };
+
+        editBtn.onclick = () => {
+          textDisplay.classList.add('hidden');
+          actionDiv.classList.add('hidden');
+          editForm.classList.remove('hidden');
+          textArea.focus();
+        };
+
+        cancelBtn.onclick = () => {
+          editForm.classList.add('hidden');
+          textDisplay.classList.remove('hidden');
+          actionDiv.classList.remove('hidden');
+          textArea.value = textDisplay.textContent === '(No text extracted)' ? '' : textDisplay.textContent;
+          editStatus.textContent = '';
+        };
+
+        saveBtn.onclick = async () => {
+          const newText = textArea.value;
+          saveBtn.disabled = true;
+          cancelBtn.disabled = true;
+          editStatus.textContent = 'Saving...';
+          
+          try {
+            const res = await fetch(`/cases/${caseId}/evidence/${ev.id}/extracted-text`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ extracted_text: newText })
+            });
+            
+            if (!res.ok) throw new Error('Save failed');
+            const updatedEv = await res.json();
+            
+            // Update UI
+            textDisplay.textContent = updatedEv.extracted_text || '(No text extracted)';
+            renderEntities(updatedEv.linked_entities);
+            
+            // Revert to read-only view
+            editForm.classList.add('hidden');
+            textDisplay.classList.remove('hidden');
+            actionDiv.classList.remove('hidden');
+            editStatus.textContent = '';
+            
+            // Add a small success flash to the card
+            card.classList.add('ring-2', 'ring-accent', 'transition-all');
+            setTimeout(() => card.classList.remove('ring-2', 'ring-accent'), 1000);
+            
+          } catch (err) {
+            editStatus.textContent = 'Error: ' + err.message;
+            editStatus.className = 'text-xs text-rose-400 mr-auto';
+          } finally {
+            saveBtn.disabled = false;
+            cancelBtn.disabled = false;
+          }
+        };
+
+        body.appendChild(textSection);
+        body.appendChild(entitySection);
+        card.appendChild(body);
+        list.appendChild(card);
+      });
+    }
+    
+    // Allow fetching existing evidence if the user just types a Case ID and presses Enter
+    $('upload-case-id').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const caseId = e.target.value.trim();
+        if (caseId) fetchEvidenceList(caseId);
+      }
+    });
 
     // ----------------------------------------------------------------
     // Boot: resume session if a token is present.

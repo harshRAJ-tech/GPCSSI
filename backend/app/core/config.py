@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     # Secret used to sign auth tokens. No default on purpose.
     SECRET_KEY: str
 
+    # Neo4j connection
+    NEO4J_URI: str
+    NEO4J_USER: str
+    NEO4J_PASSWORD: str
+
     # JWT settings.
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
