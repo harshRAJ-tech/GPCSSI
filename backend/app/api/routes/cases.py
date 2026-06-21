@@ -20,6 +20,16 @@ from app.services import audit
 router = APIRouter(prefix="/cases", tags=["cases"])
 
 
+@router.get("", response_model=list[CaseResponse], status_code=status.HTTP_200_OK)
+def list_cases(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[Case]:
+    """List all cases."""
+    from sqlalchemy import select
+    cases = db.scalars(select(Case).order_by(Case.created_at.desc())).all()
+    return cases
+
 @router.post("", response_model=CaseResponse, status_code=status.HTTP_201_CREATED)
 def create_case(
     payload: CaseCreate,
