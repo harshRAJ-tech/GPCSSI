@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,6 +19,12 @@
         localStorage, to shrink the token-theft window. Tracked follow-up:
         move to a bundled SPA with a strict CSP + httpOnly cookie auth.
   -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <!--
     NOTE on SRI: a Subresource Integrity hash should be added here for
@@ -26,12 +33,8 @@
     blocks the script). Tracked follow-up: pin + SRI, or self-host the
     library so it is covered by a strict CSP.
   -->
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-    onerror="window.__cytoscapeFailed=true"
-  ></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js" crossorigin="anonymous"
+    referrerpolicy="no-referrer" onerror="window.__cytoscapeFailed=true"></script>
 
   <script>
     tailwind.config = {
@@ -39,45 +42,165 @@
       theme: {
         extend: {
           colors: {
-            ink: '#0a0e14',
-            panel: '#0f141c',
-            panel2: '#141b26',
-            line: '#1f2937',
-            accent: '#38bdf8',
-            accent2: '#22d3ee',
+            ink: '#030508',         // Deepest black for background
+            panel: '#090d14',       // Slightly lighter for panels
+            panel2: '#101622',      // Elevated panels
+            line: '#1b2436',        // Borders
+            accent: '#00f3ff',      // Neon Cyan
+            accent2: '#b026ff',     // Neon Purple
+            accent3: '#00ff9d',     // Neon Green (success/growth)
+            accent_dim: 'rgba(0, 243, 255, 0.15)',
           },
           fontFamily: {
-            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+            sans: ['Rajdhani', 'sans-serif'],
+            mono: ['"Space Mono"', 'ui-monospace', 'monospace'],
           },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'glow-scan': 'scan 2s linear infinite',
+          },
+          keyframes: {
+            scan: {
+              '0%': { transform: 'translateY(-100%)' },
+              '100%': { transform: 'translateY(100%)' },
+            }
+          }
         },
       },
     };
   </script>
 
   <style>
-    html, body { height: 100%; }
-    body { background:
-      radial-gradient(1200px 600px at 80% -10%, rgba(56,189,248,0.08), transparent 60%),
-      radial-gradient(900px 500px at -10% 110%, rgba(34,211,238,0.06), transparent 55%),
-      #0a0e14; }
-    .glass { background: rgba(15,20,28,0.72); backdrop-filter: blur(10px); }
-    .ring-glow:focus { outline: none; box-shadow: 0 0 0 2px rgba(56,189,248,0.55); }
-    .fade-in { animation: fade .35s ease both; }
-    @keyframes fade { from { opacity: 0; transform: translateY(6px);} to {opacity:1; transform:none;} }
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    #cy { width: 100%; height: 100%; }
+    html,
+    body {
+      height: 100%;
+    }
+
+    /* Cyber Grid Background */
+    body {
+      background-color: #030508;
+      background-image:
+        radial-gradient(1200px 800px at 50% -20%, rgba(0, 243, 255, 0.08), transparent 70%),
+        radial-gradient(1000px 800px at 80% 120%, rgba(176, 38, 255, 0.05), transparent 60%),
+        linear-gradient(rgba(27, 36, 54, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(27, 36, 54, 0.2) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      background-position: center top, center bottom, center center, center center;
+    }
+
+    .glass {
+      background: rgba(9, 13, 20, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(27, 36, 54, 0.8);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .glass-panel {
+      background: rgba(16, 22, 34, 0.7);
+      border: 1px solid rgba(27, 36, 54, 0.6);
+      transition: all 0.2s ease-in-out;
+    }
+
+    .glass-panel:hover {
+      border-color: rgba(0, 243, 255, 0.3);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.05) inset;
+    }
+
+    .ring-glow:focus {
+      outline: none;
+      box-shadow: 0 0 0 1px #00f3ff, 0 0 10px rgba(0, 243, 255, 0.3);
+      border-color: #00f3ff;
+    }
+
+    .fade-in {
+      animation: fade .4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* Custom Scrollbar for Cyber feel */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #1b2436;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00f3ff;
+      box-shadow: 0 0 5px #00f3ff;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(3, 5, 8, 0.5);
+    }
+
+    #cy {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Cyber Glowing Text Utilities */
+    .text-glow-cyan {
+      text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+    }
+
+    .text-glow-purple {
+      text-shadow: 0 0 8px rgba(176, 38, 255, 0.6);
+    }
+
+    /* Cyber Button Hover */
+    .btn-cyber {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .btn-cyber::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transform: skewX(-20deg);
+      transition: all 0.5s ease;
+    }
+
+    .btn-cyber:hover::before {
+      left: 150%;
+    }
+
+    .btn-cyber:hover {
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+    }
   </style>
 </head>
 
-<body class="text-slate-200 font-sans antialiased">
+<body class="text-slate-300 font-sans antialiased overflow-x-hidden">
 
   <!-- ============================ LOGIN GATE ============================ -->
   <section id="login-view" class="min-h-screen flex items-center justify-center p-6">
     <div class="glass w-full max-w-md rounded-2xl border border-line p-8 fade-in shadow-2xl">
       <div class="flex items-center gap-3 mb-6">
-        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-accent to-accent2 grid place-items-center text-ink font-black">CI</div>
+        <div
+          class="h-10 w-10 rounded-xl bg-gradient-to-br from-accent to-accent2 grid place-items-center text-ink font-black">
+          CI</div>
         <div>
           <h1 class="text-lg font-semibold tracking-tight">Cyber Investigation</h1>
           <p class="text-xs text-slate-400 -mt-0.5">Intelligence Platform</p>
@@ -107,11 +230,14 @@
         <a href="#" id="toggle-register" class="text-accent hover:underline">Create a new account (Dev Only)</a>
       </div>
     </div>
-    
+
     <!-- Registration Form (Hidden by default) -->
-    <div id="register-container" class="glass w-full max-w-md rounded-2xl border border-line p-8 fade-in shadow-2xl hidden">
+    <div id="register-container"
+      class="glass w-full max-w-md rounded-2xl border border-line p-8 fade-in shadow-2xl hidden">
       <div class="flex items-center gap-3 mb-6">
-        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-400 grid place-items-center text-ink font-black">CI</div>
+        <div
+          class="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-400 grid place-items-center text-ink font-black">
+          CI</div>
         <div>
           <h1 class="text-lg font-semibold tracking-tight">Create Account</h1>
           <p class="text-xs text-slate-400 -mt-0.5">Development Use Only</p>
@@ -149,50 +275,64 @@
   <!-- ============================ APP SHELL ============================ -->
   <main id="app-view" class="hidden min-h-screen flex flex-col">
     <!-- Top bar -->
-    <header class="glass border-b border-line">
-      <div class="mx-auto max-w-7xl px-5 h-14 flex items-center justify-between">
+    <header class="glass border-b border-accent/20 relative overflow-hidden">
+      <div class="absolute inset-0 bg-accent/5 animate-pulse-slow pointer-events-none"></div>
+      <div class="mx-auto max-w-7xl px-5 h-14 flex items-center justify-between relative z-10">
         <div class="flex items-center gap-6">
           <div class="flex items-center gap-3">
-            <div class="h-7 w-7 rounded-lg bg-gradient-to-br from-accent to-accent2 grid place-items-center text-ink text-xs font-black">CI</div>
-            <span class="text-sm font-semibold tracking-tight">CIIP Platform</span>
+            <div
+              class="h-8 w-8 rounded-lg bg-gradient-to-br from-accent to-accent2 grid place-items-center text-ink font-bold shadow-[0_0_10px_rgba(0,243,255,0.4)]">
+              CI</div>
+            <span class="font-bold tracking-wider text-glow-cyan">CIIP <span class="text-accent2">Terminal</span></span>
           </div>
-          <nav class="flex gap-2">
-            <button id="nav-search-btn" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-panel border border-accent text-accent transition">Search Center</button>
-            <button id="nav-dash-btn" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition">Dashboard & Uploads</button>
+          <nav class="flex gap-1" id="nav-tabs">
+            <button data-target="search-center"
+              class="px-3 py-1.5 text-sm rounded-md bg-accent/10 text-accent font-medium border border-accent/30 transition shadow-[0_0_8px_rgba(0,243,255,0.2)]">Search
+              Core</button>
+            <button data-target="dashboard"
+              class="px-3 py-1.5 text-sm rounded-md text-slate-400 hover:text-slate-200 hover:bg-panel2 transition">Command
+              Center</button>
           </nav>
         </div>
-        <button id="logout-btn" class="text-xs text-slate-400 hover:text-slate-200 transition">Sign out</button>
+        <button id="logout-btn"
+          class="text-sm text-rose-400 hover:text-rose-300 font-mono transition">DISCONNECT</button>
       </div>
     </header>
 
     <!-- ============================ SEARCH VIEW ============================ -->
     <div id="search-view" class="flex flex-col flex-1">
       <!-- Search bar -->
-      <div class="mx-auto max-w-7xl w-full px-5 pt-6">
-        <form id="search-form" class="flex gap-2">
-          <div class="relative flex-1">
-            <input id="search-input" type="text" required maxlength="512"
-              placeholder="Search a phone, UPI, bank account, IFSC, UTR, email, wallet..."
-              class="ring-glow w-full rounded-xl bg-panel2 border border-line pl-11 pr-4 py-3 text-sm" />
-            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
-            </svg>
+      <div class="mx-auto max-w-2xl w-full fade-in">
+        <form id="search-form" class="relative group" autocomplete="off">
+          <div
+            class="absolute inset-0 bg-accent/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition duration-500">
           </div>
-          <button type="submit"
-            class="rounded-xl bg-gradient-to-r from-accent to-accent2 text-ink font-semibold px-6 text-sm hover:opacity-90 transition">
-            Search
-          </button>
+          <div
+            class="relative flex items-center bg-panel2 border border-accent/30 rounded-full shadow-[0_0_15px_rgba(0,243,255,0.15)] overflow-hidden">
+            <div class="pl-5 text-accent">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input id="search-input" type="text" placeholder="Query entities (phone, upi, bank_account)..."
+              class="w-full bg-transparent border-none px-4 py-4 text-base font-mono focus:ring-0 text-slate-100 placeholder-slate-500" />
+            <button type="submit"
+              class="pr-5 pl-2 text-sm font-bold text-accent hover:text-accent2 transition uppercase tracking-widest">
+              EXECUTE
+            </button>
+          </div>
         </form>
-        <p class="mt-2 text-[11px] text-slate-500">Type is auto-detected. Values are normalized before correlation.</p>
-      </div>
-
-      <!-- Status / empty / error -->
-      <div id="status" class="mx-auto max-w-7xl w-full px-5 pt-6 hidden">
-        <div class="glass rounded-xl border border-line px-5 py-4 text-sm text-slate-300"></div>
+        <div id="status" class="hidden mt-4 text-center fade-in">
+          <div
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-mono font-medium shadow-[0_0_8px_rgba(0,243,255,0.2)]">
+          </div>
+        </div>
       </div>
 
       <!-- Results -->
-      <section id="results" class="hidden mx-auto max-w-7xl w-full px-5 py-6 grid grid-cols-1 lg:grid-cols-5 gap-5 flex-1">
+      <section id="results"
+        class="hidden mx-auto max-w-7xl w-full px-5 py-6 grid grid-cols-1 lg:grid-cols-5 gap-5 flex-1">
         <!-- Left column: summary + tables -->
         <div class="lg:col-span-2 space-y-5">
           <!-- Entity summary -->
@@ -217,22 +357,36 @@
             <!-- Connection strength: derived from data, NOT a risk score. -->
             <div class="mt-4">
               <div class="flex items-center justify-between">
-                <p class="text-[11px] text-slate-400">Connection strength <span class="text-slate-600">(derived from mentions &amp; shared cases)</span></p>
+                <p class="text-[11px] text-slate-400">Connection strength <span class="text-slate-600">(derived from
+                    mentions &amp; shared cases)</span></p>
                 <span id="strength-label" class="text-[11px] font-semibold"></span>
               </div>
               <div class="mt-1.5 h-2 w-full rounded-full bg-panel2 overflow-hidden">
-                <div id="strength-bar" class="h-full rounded-full bg-gradient-to-r from-accent to-accent2 transition-all" style="width:0%"></div>
+                <div id="strength-bar"
+                  class="h-full rounded-full bg-gradient-to-r from-accent to-accent2 transition-all" style="width:0%">
+                </div>
               </div>
             </div>
           </div>
 
+          <!-- Target Case Details -->
+          <div class="glass-panel rounded-2xl p-5 fade-in">
+            <h3 class="text-sm font-bold text-accent mb-3 uppercase tracking-widest border-b border-accent/20 pb-2">
+              Target Overview</h3>
+            <div id="case-details" class="text-sm text-slate-400 font-mono">No target acquired. Execute search.</div>
+          </div>
+
           <!-- Linked cases -->
-          <div class="glass rounded-2xl border border-line p-5 fade-in">
-            <h3 class="text-sm font-semibold mb-3">Linked cases</h3>
+          <div class="glass-panel rounded-2xl p-5 fade-in">
+            <h3 class="text-sm font-bold text-accent mb-3 uppercase tracking-widest border-b border-accent/20 pb-2">
+              Correlated Cases</h3>
             <div class="overflow-hidden rounded-xl border border-line">
-              <table class="w-full text-sm">
-                <thead class="bg-panel2 text-slate-400 text-[11px] uppercase tracking-wide">
-                  <tr><th class="text-left px-3 py-2">Case ID</th><th class="text-right px-3 py-2">Mentions</th></tr>
+              <table class="w-full text-sm font-mono">
+                <thead class="bg-panel2 text-slate-400 text-[11px] uppercase tracking-wide border-b border-line">
+                  <tr>
+                    <th class="text-left px-3 py-2">Case ID</th>
+                    <th class="text-right px-3 py-2">Mentions</th>
+                  </tr>
                 </thead>
                 <tbody id="cases-body"></tbody>
               </table>
@@ -240,12 +394,17 @@
           </div>
 
           <!-- Connected entities -->
-          <div class="glass rounded-2xl border border-line p-5 fade-in">
-            <h3 class="text-sm font-semibold mb-3">Connected entities</h3>
+          <div class="glass-panel rounded-2xl p-5 fade-in">
+            <h3 class="text-sm font-bold text-accent mb-3 uppercase tracking-widest border-b border-accent/20 pb-2">
+              Network Nodes</h3>
             <div class="overflow-hidden rounded-xl border border-line">
-              <table class="w-full text-sm">
-                <thead class="bg-panel2 text-slate-400 text-[11px] uppercase tracking-wide">
-                  <tr><th class="text-left px-3 py-2">Type</th><th class="text-left px-3 py-2">Value</th><th class="text-right px-3 py-2">Shared</th></tr>
+              <table class="w-full text-sm font-mono">
+                <thead class="bg-panel2 text-slate-400 text-[11px] uppercase tracking-wide border-b border-line">
+                  <tr>
+                    <th class="text-left px-3 py-2">Type</th>
+                    <th class="text-left px-3 py-2">Value</th>
+                    <th class="text-right px-3 py-2">Shared</th>
+                  </tr>
                 </thead>
                 <tbody id="connected-body"></tbody>
               </table>
@@ -255,16 +414,26 @@
 
         <!-- Right column: graph -->
         <div class="lg:col-span-3">
-          <div class="glass rounded-2xl border border-line p-3 h-[640px] flex flex-col fade-in">
-            <div class="flex items-center justify-between px-2 py-1.5">
-              <h3 class="text-sm font-semibold">Link graph</h3>
+          <div
+            class="glass rounded-2xl border border-accent/30 p-3 h-[640px] flex flex-col fade-in shadow-[0_0_20px_rgba(0,243,255,0.1)] relative overflow-hidden">
+            <div
+              class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-50">
+            </div>
+            <div class="flex items-center justify-between px-2 py-1.5 z-10">
+              <h3 class="text-sm font-bold text-accent uppercase tracking-widest">Network Topology</h3>
               <div class="flex items-center gap-2">
-                <button id="graph-fit" class="text-[11px] text-slate-400 hover:text-slate-200 border border-line rounded-md px-2 py-1">Fit</button>
-                <span class="text-[11px] text-slate-500">click a node to focus</span>
+                <button id="graph-fit"
+                  class="text-[11px] text-accent hover:text-white border border-accent/40 rounded-md px-2 py-1 transition hover:bg-accent/20 font-mono">FIT_VIEW</button>
+                <span class="text-[11px] text-slate-500 font-mono">SELECT_NODE_FOR_DATA</span>
               </div>
             </div>
-            <div id="cy" class="flex-1 rounded-xl bg-ink/60 border border-line"></div>
-            <div id="graph-fallback" class="hidden flex-1 grid place-items-center text-sm text-slate-500">Graph library unavailable (offline). Tables above remain fully functional.</div>
+            <div id="cy" class="flex-1 rounded-xl bg-ink/80 border border-accent/20 mt-2 relative overflow-hidden z-10">
+              <div
+                class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+CjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiIGZpbGw9Im5vbmUiLz4KPHBhdGggZD0iTTAgMGg0MHYxSDB6bTAgMzlzNDB2MUgweiIgZmlsbD0icmdiYSg1NiwgMTg5LCAyNDgsIDAuMSkiLz4KPHBhdGggZD0iTTAgMHY0MGgxVjB6bTM5IDB2NDBoMVYweiIgZmlsbD0icmdiYSg1NiwgMTg5LCAyNDgsIDAuMSkiLz4KPC9zdmc+')] opacity-20 pointer-events-none">
+              </div>
+            </div>
+            <div id="graph-fallback" class="hidden flex-1 grid place-items-center text-sm text-slate-500">Graph library
+              unavailable (offline). Tables above remain fully functional.</div>
             <div id="node-detail" class="hidden mt-2 rounded-xl bg-panel2 border border-line px-3 py-2 text-xs"></div>
           </div>
         </div>
@@ -274,70 +443,89 @@
     <!-- ============================ DASHBOARD & BATCH UPLOAD VIEW ============================ -->
     <div id="dashboard-view" class="hidden flex-1 mx-auto max-w-7xl w-full px-5 py-6 flex flex-col gap-6">
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        
+
         <!-- Left Column: Case Creation (2/5 width) -->
         <div class="lg:col-span-2 space-y-6">
-          <div class="glass rounded-2xl border border-line p-6 fade-in shadow-xl">
-            <h2 class="text-base font-bold text-accent mb-4 tracking-tight flex items-center gap-2">
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          <div
+            class="glass rounded-2xl border border-accent/30 p-6 fade-in shadow-[0_0_20px_rgba(0,243,255,0.05)] relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-accent/10 blur-2xl rounded-full"></div>
+            <h2 class="text-base font-bold text-accent mb-4 tracking-tight flex items-center gap-2 uppercase">
+              <svg class="h-5 w-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
               </svg>
-              Open New Investigation Case
+              Initialize Operation
             </h2>
             <form id="create-case-form" class="space-y-4" autocomplete="off">
               <div>
-                <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Case Title</label>
-                <input id="case-title" type="text" required placeholder="e.g., UPI KYC Fraud Scam Ring"
-                  class="ring-glow w-full rounded-lg bg-panel2 border border-line px-3 py-2.5 text-sm" />
+                <label class="block text-[10px] uppercase tracking-widest text-accent mb-1 font-mono">Operation
+                  Codename</label>
+                <input id="case-title" type="text" required placeholder="e.g., OP_CYBER_STRIKE"
+                  class="ring-glow w-full rounded-lg bg-panel2/80 border border-line px-3 py-2.5 text-sm font-mono text-slate-200 placeholder-slate-600 focus:border-accent" />
               </div>
               <div>
-                <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Description / Notes</label>
-                <textarea id="case-desc" rows="4" placeholder="Enter initial complaint details, victim statements, or investigation overview..."
-                  class="ring-glow w-full rounded-lg bg-panel2 border border-line px-3 py-2.5 text-sm resize-none"></textarea>
+                <label class="block text-[10px] uppercase tracking-widest text-accent mb-1 font-mono">Intelligence
+                  Brief</label>
+                <textarea id="case-desc" rows="4"
+                  placeholder="Enter initial parameters, victim vectors, or intelligence overview..."
+                  class="ring-glow w-full rounded-lg bg-panel2/80 border border-line px-3 py-2.5 text-sm font-mono text-slate-200 placeholder-slate-600 resize-none focus:border-accent"></textarea>
               </div>
               <button type="submit"
-                class="w-full rounded-lg bg-gradient-to-r from-accent to-accent2 text-ink font-semibold py-2.5 text-sm hover:opacity-90 transition">
-                Create Case
+                class="btn-cyber w-full rounded-lg bg-gradient-to-r from-accent to-accent2 text-ink font-bold py-2.5 text-sm uppercase tracking-widest">
+                Deploy Operation
               </button>
-              <p id="case-create-status" class="text-sm min-h-[1.25rem] mt-2" role="alert"></p>
+              <p id="case-create-status" class="text-sm min-h-[1.25rem] mt-2 font-mono text-accent3" role="alert"></p>
             </form>
           </div>
         </div>
 
         <!-- Right Column: Multi-File Upload Panel (3/5 width) -->
         <div class="lg:col-span-3 space-y-6">
-          <div class="glass rounded-2xl border border-line p-6 fade-in shadow-xl">
-            <h2 class="text-base font-bold text-accent mb-4 tracking-tight flex items-center gap-2">
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          <div
+            class="glass rounded-2xl border border-accent/30 p-6 fade-in shadow-[0_0_20px_rgba(0,243,255,0.05)] relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-accent2/10 blur-3xl rounded-full"></div>
+            <h2
+              class="text-base font-bold text-accent2 mb-4 tracking-tight flex items-center gap-2 uppercase text-glow-purple">
+              <svg class="h-5 w-5 text-accent2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
               </svg>
-              Evidence Upload Center
+              Evidence Ingestion Uplink
             </h2>
-            
+
             <div class="space-y-4">
               <!-- Target Case Selection -->
               <div>
-                <label class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Target Case ID (Required)</label>
+                <label class="block text-[10px] uppercase tracking-widest text-accent2 mb-1 font-mono">Target Operation
+                  ID</label>
                 <div class="relative">
-                  <input id="upload-case-id" type="number" required min="1" placeholder="Enter Case ID to attach evidence files"
-                    class="ring-glow w-full rounded-lg bg-panel2 border border-line pl-10 pr-3 py-2.5 text-sm font-mono" />
-                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-mono">#</span>
+                  <input id="upload-case-id" type="number" required min="1"
+                    placeholder="Enter OP_ID to establish data link"
+                    class="ring-glow w-full rounded-lg bg-panel2/80 border border-line pl-10 pr-3 py-2.5 text-sm font-mono focus:border-accent2 text-slate-200" />
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-accent2 font-mono font-bold">#</span>
                 </div>
               </div>
 
               <!-- Drag and drop zone -->
-              <div id="drop-zone" class="border-2 border-dashed border-line rounded-xl p-8 text-center cursor-pointer hover:border-accent/50 transition bg-ink/30 relative">
-                <input type="file" id="file-input" multiple class="hidden" accept=".pdf,.png,.jpg,.jpeg,.csv,.xls,.xlsx" />
-                <div class="flex flex-col items-center gap-3">
-                  <svg class="h-10 w-10 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="12" y1="18" x2="12" y2="12"/>
-                    <line x1="9" y1="15" x2="15" y2="15"/>
-                  </svg>
+              <div id="drop-zone"
+                class="border-2 border-dashed border-accent/40 rounded-xl p-8 text-center cursor-pointer hover:border-accent2 hover:bg-accent2/5 transition relative overflow-hidden group">
+                <div class="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 animate-pulse-slow"></div>
+                <input type="file" id="file-input" multiple class="hidden"
+                  accept=".pdf,.png,.jpg,.jpeg,.csv,.xls,.xlsx" />
+                <div class="flex flex-col items-center gap-3 relative z-10">
+                  <div
+                    class="p-3 bg-panel2 rounded-full border border-accent/20 group-hover:border-accent2 group-hover:shadow-[0_0_15px_rgba(176,38,255,0.4)] transition">
+                    <svg class="h-8 w-8 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="1.5">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="12" y1="18" x2="12" y2="12" />
+                      <line x1="9" y1="15" x2="15" y2="15" />
+                    </svg>
+                  </div>
                   <div>
-                    <p class="text-sm font-medium">Drag and drop files here, or <span class="text-accent underline">browse</span></p>
-                    <p class="text-xs text-slate-500 mt-1">Supports PDF, PNG, JPG, CSV, Excel (Max 25MB per file)</p>
+                    <p class="text-sm font-mono text-slate-300">Transmit files to secure buffer or <span
+                        class="text-accent2 underline cursor-pointer">SELECT DATA</span></p>
+                    <p class="text-[10px] uppercase tracking-widest text-slate-500 mt-2 font-mono">Supported Formats:
+                      PDF, PNG, JPG, CSV, XLS (Max 25MB)</p>
                   </div>
                 </div>
               </div>
@@ -351,19 +539,23 @@
                 <div class="max-h-60 overflow-y-auto border border-line rounded-xl divide-y divide-line bg-panel2/50">
                   <div id="queue-list" class="divide-y divide-line"></div>
                 </div>
-                
-                <button id="start-upload-btn" class="w-full rounded-lg bg-gradient-to-r from-accent to-accent2 text-ink font-semibold py-2.5 text-sm hover:opacity-90 transition flex items-center justify-center gap-2">
+
+                <button id="start-upload-btn"
+                  class="w-full rounded-lg bg-gradient-to-r from-accent to-accent2 text-ink font-semibold py-2.5 text-sm hover:opacity-90 transition flex items-center justify-center gap-2">
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                    <polyline points="16 16 12 12 8 16" />
+                    <line x1="12" y1="12" x2="12" y2="21" />
+                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
                   </svg>
                   Upload & Analyze Batch
                 </button>
               </div>
             </div>
           </div>
-          
+
           <!-- NEW SECTION: Extraction Results -->
-          <div id="extraction-results-container" class="hidden glass rounded-2xl border border-line p-6 fade-in shadow-xl">
+          <div id="extraction-results-container"
+            class="hidden glass rounded-2xl border border-line p-6 fade-in shadow-xl">
             <h2 class="text-base font-bold text-accent mb-4 tracking-tight flex items-center gap-2">
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -382,620 +574,624 @@
   </main>
 
   <script>
-  'use strict';
-  (function () {
-    // ----------------------------------------------------------------
-    // Tiny same-origin API client. Token kept in-memory + sessionStorage.
-    // ----------------------------------------------------------------
-    const TOKEN_KEY = 'ciip_token';
-    let token = sessionStorage.getItem(TOKEN_KEY) || null;
+    'use strict';
+    (function () {
+      // ----------------------------------------------------------------
+      // Tiny same-origin API client. Token kept in-memory + sessionStorage.
+      // ----------------------------------------------------------------
+      const TOKEN_KEY = 'ciip_token';
+      let token = sessionStorage.getItem(TOKEN_KEY) || null;
 
-    const $ = (id) => document.getElementById(id);
+      const $ = (id) => document.getElementById(id);
 
-    function setToken(t) {
-      token = t;
-      if (t) sessionStorage.setItem(TOKEN_KEY, t);
-      else sessionStorage.removeItem(TOKEN_KEY);
-    }
+      function setToken(t) {
+        token = t;
+        if (t) sessionStorage.setItem(TOKEN_KEY, t);
+        else sessionStorage.removeItem(TOKEN_KEY);
+      }
 
-    function showApp() { $('login-view').classList.add('hidden'); $('app-view').classList.remove('hidden'); }
-    function showLogin() { $('app-view').classList.add('hidden'); $('login-view').classList.remove('hidden'); }
+      function showApp() { $('login-view').classList.add('hidden'); $('app-view').classList.remove('hidden'); }
+      function showLogin() { $('app-view').classList.add('hidden'); $('login-view').classList.remove('hidden'); }
 
-    // Entity-type -> presentation. Covers every EntityType enum value.
-    const TYPE_META = {
-      upi:           { label: 'UPI',          color: '#38bdf8' },
-      bank_account:  { label: 'Bank Account', color: '#a78bfa' },
-      ifsc:          { label: 'IFSC',         color: '#818cf8' },
-      utr:           { label: 'UTR',          color: '#c084fc' },
-      phone:         { label: 'Phone',        color: '#34d399' },
-      email:         { label: 'Email',        color: '#fbbf24' },
-      url:           { label: 'URL',          color: '#f472b6' },
-      domain:        { label: 'Domain',       color: '#fb7185' },
-      ip_address:    { label: 'IP Address',   color: '#f87171' },
-      telegram:      { label: 'Telegram',     color: '#22d3ee' },
-      crypto_wallet: { label: 'Crypto Wallet',color: '#fcd34d' },
-    };
-    const meta = (t) => TYPE_META[t] || { label: t || 'Unknown', color: '#94a3b8' };
+      // Entity-type -> presentation. Covers every EntityType enum value.
+      const TYPE_META = {
+        upi: { label: 'UPI', color: '#38bdf8' },
+        bank_account: { label: 'Bank Account', color: '#a78bfa' },
+        ifsc: { label: 'IFSC', color: '#818cf8' },
+        utr: { label: 'UTR', color: '#c084fc' },
+        phone: { label: 'Phone', color: '#34d399' },
+        email: { label: 'Email', color: '#fbbf24' },
+        url: { label: 'URL', color: '#f472b6' },
+        domain: { label: 'Domain', color: '#fb7185' },
+        ip_address: { label: 'IP Address', color: '#f87171' },
+        telegram: { label: 'Telegram', color: '#22d3ee' },
+        crypto_wallet: { label: 'Crypto Wallet', color: '#fcd34d' },
+      };
+      const meta = (t) => TYPE_META[t] || { label: t || 'Unknown', color: '#94a3b8' };
 
-    // ----------------------------------------------------------------
-    // LOGIN & REGISTRATION
-    // ----------------------------------------------------------------
-    $('toggle-register').addEventListener('click', (e) => {
-      e.preventDefault();
-      $('login-view').querySelector('div.glass').classList.add('hidden');
-      $('register-container').classList.remove('hidden');
-    });
+      // ----------------------------------------------------------------
+      // LOGIN & REGISTRATION
+      // ----------------------------------------------------------------
+      $('toggle-register').addEventListener('click', (e) => {
+        e.preventDefault();
+        $('login-view').querySelector('div.glass').classList.add('hidden');
+        $('register-container').classList.remove('hidden');
+      });
 
-    $('toggle-login').addEventListener('click', (e) => {
-      e.preventDefault();
-      $('register-container').classList.add('hidden');
-      $('login-view').querySelector('div.glass').classList.remove('hidden');
-    });
+      $('toggle-login').addEventListener('click', (e) => {
+        e.preventDefault();
+        $('register-container').classList.add('hidden');
+        $('login-view').querySelector('div.glass').classList.remove('hidden');
+      });
 
-    $('register-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const errEl = $('register-error');
-      errEl.textContent = '';
-      try {
-        const res = await fetch('/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: $('reg-username').value,
-            full_name: $('reg-fullname').value,
-            password: $('reg-password').value
-          }),
-        });
-        if (!res.ok) {
-          errEl.textContent = res.status === 409
-            ? 'Username already exists.'
-            : 'Registration failed (' + res.status + ').';
+      $('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errEl = $('register-error');
+        errEl.textContent = '';
+        try {
+          const res = await fetch('/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: $('reg-username').value,
+              full_name: $('reg-fullname').value,
+              password: $('reg-password').value
+            }),
+          });
+          if (!res.ok) {
+            errEl.textContent = res.status === 409
+              ? 'Username already exists.'
+              : 'Registration failed (' + res.status + ').';
+            return;
+          }
+          const data = await res.json();
+          if (!data.access_token) { errEl.textContent = 'Unexpected server response.'; return; }
+          setToken(data.access_token);
+          $('reg-password').value = '';
+          showApp();
+          $('search-input').focus();
+        } catch (_) {
+          errEl.textContent = 'Network error. Is the API reachable?';
+        }
+      });
+
+      $('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errEl = $('login-error');
+        errEl.textContent = '';
+        const body = new URLSearchParams();
+        body.set('username', $('username').value);
+        body.set('password', $('password').value);
+        try {
+          const res = await fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body.toString(),
+          });
+          if (!res.ok) {
+            errEl.textContent = res.status === 401
+              ? 'Incorrect username or password.'
+              : 'Sign-in failed (' + res.status + ').';
+            return;
+          }
+          const data = await res.json();
+          if (!data.access_token) { errEl.textContent = 'Unexpected server response.'; return; }
+          setToken(data.access_token);
+          $('password').value = '';
+          showApp();
+          $('search-input').focus();
+        } catch (_) {
+          errEl.textContent = 'Network error. Is the API reachable?';
+        }
+      });
+
+      $('logout-btn').addEventListener('click', () => { setToken(null); showLogin(); });
+
+      // ----------------------------------------------------------------
+      // SEARCH
+      // ----------------------------------------------------------------
+      let cy = null;
+
+      function setStatus(msg) {
+        const box = $('status');
+        if (!msg) { box.classList.add('hidden'); return; }
+        box.querySelector('div').textContent = msg; // textContent = XSS-safe
+        box.classList.remove('hidden');
+      }
+
+      $('search-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const value = $('search-input').value.trim();
+        if (!value) return;
+        $('results').classList.add('hidden');
+        setStatus('Correlating...');
+        try {
+          const res = await fetch('/search?value=' + encodeURIComponent(value), {
+            headers: { 'Authorization': 'Bearer ' + token },
+          });
+          if (res.status === 401) { setToken(null); showLogin(); return; }
+          if (res.status === 404) { setStatus('No entity found for that value.'); return; }
+          if (!res.ok) { setStatus('Search failed (' + res.status + ').'); return; }
+          const data = await res.json();
+          setStatus(null);
+          render(data);
+        } catch (_) {
+          setStatus('Network error during search.');
+        }
+      });
+
+      // ----------------------------------------------------------------
+      // RENDER (all untrusted values via textContent / DOM APIs only)
+      // ----------------------------------------------------------------
+      function render(data) {
+        const m = meta(data.entity_type);
+
+        $('sum-value').textContent = data.normalized_value;
+        const typeBadge = $('sum-type');
+        typeBadge.textContent = m.label;
+        typeBadge.style.backgroundColor = m.color + '22';
+        typeBadge.style.color = m.color;
+
+        const cases = data.cases || [];
+        const connected = data.connected_entities || [];
+        $('sum-cases').textContent = String(cases.length);
+        $('sum-connected').textContent = String(connected.length);
+
+        // Connection strength: a transparent, data-derived heuristic.
+        // NOT a risk score. Combines total mentions and shared-case links.
+        const totalMentions = cases.reduce((s, c) => s + (c.mention_count || 0), 0);
+        const totalShared = connected.reduce((s, c) => s + (c.shared_case_count || 0), 0);
+        const raw = totalMentions + totalShared + connected.length + cases.length;
+        const pct = Math.max(6, Math.min(100, Math.round((raw / 30) * 100)));
+        $('strength-bar').style.width = pct + '%';
+        const lbl = pct >= 75 ? 'Very strong' : pct >= 50 ? 'Strong' : pct >= 25 ? 'Moderate' : 'Weak';
+        $('strength-label').textContent = lbl + ' (' + pct + '%)';
+
+        // Linked cases table.
+        const cb = $('cases-body');
+        cb.replaceChildren();
+        if (!cases.length) {
+          cb.appendChild(emptyRow(2, 'No linked cases.'));
+        } else {
+          cases.forEach((c) => {
+            const tr = document.createElement('tr');
+            tr.className = 'border-t border-line';
+            tr.appendChild(td('#' + c.case_id, 'px-3 py-2 font-mono'));
+            tr.appendChild(td(String(c.mention_count), 'px-3 py-2 text-right text-slate-400'));
+            cb.appendChild(tr);
+          });
+        }
+
+        // Connected entities table.
+        const eb = $('connected-body');
+        eb.replaceChildren();
+        if (!connected.length) {
+          eb.appendChild(emptyRow(3, 'No connected entities.'));
+        } else {
+          connected.forEach((c) => {
+            const cm = meta(c.entity_type);
+            const tr = document.createElement('tr');
+            tr.className = 'border-t border-line';
+            const typeCell = document.createElement('td');
+            typeCell.className = 'px-3 py-2';
+            const chip = document.createElement('span');
+            chip.className = 'rounded-full px-2 py-0.5 text-[11px] font-medium';
+            chip.style.backgroundColor = cm.color + '22';
+            chip.style.color = cm.color;
+            chip.textContent = cm.label;
+            typeCell.appendChild(chip);
+            tr.appendChild(typeCell);
+            tr.appendChild(td(c.normalized_value, 'px-3 py-2 font-mono break-all'));
+            tr.appendChild(td(String(c.shared_case_count), 'px-3 py-2 text-right text-slate-400'));
+            eb.appendChild(tr);
+          });
+        }
+
+        $('results').classList.remove('hidden');
+        renderGraph(data, m);
+      }
+
+      function td(text, cls) {
+        const el = document.createElement('td');
+        el.className = cls;
+        el.textContent = text; // XSS-safe
+        return el;
+      }
+      function emptyRow(span, text) {
+        const tr = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = span;
+        cell.className = 'px-3 py-4 text-center text-slate-500';
+        cell.textContent = text;
+        tr.appendChild(cell);
+        return tr;
+      }
+
+      // ----------------------------------------------------------------
+      // GRAPH (Cytoscape). Queried entity at center; cases + connected
+      // entities as surrounding nodes. Degrades gracefully if CDN fails.
+      // ----------------------------------------------------------------
+      function renderGraph(data, m) {
+        const cyDiv = $('cy');
+        const fb = $('graph-fallback');
+        if (window.__cytoscapeFailed || typeof cytoscape === 'undefined') {
+          cyDiv.classList.add('hidden');
+          fb.classList.remove('hidden');
           return;
         }
-        const data = await res.json();
-        if (!data.access_token) { errEl.textContent = 'Unexpected server response.'; return; }
-        setToken(data.access_token);
-        $('reg-password').value = '';
-        showApp();
-        $('search-input').focus();
-      } catch (_) {
-        errEl.textContent = 'Network error. Is the API reachable?';
-      }
-    });
+        fb.classList.add('hidden');
+        cyDiv.classList.remove('hidden');
 
-    $('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const errEl = $('login-error');
-      errEl.textContent = '';
-      const body = new URLSearchParams();
-      body.set('username', $('username').value);
-      body.set('password', $('password').value);
-      try {
-        const res = await fetch('/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body.toString(),
+        const elements = [];
+        const rootId = 'root';
+        elements.push({ data: { id: rootId, label: data.normalized_value, color: m.color, kind: 'root', detail: m.label + ' \u2022 ' + data.normalized_value } });
+
+        (data.cases || []).forEach((c) => {
+          const id = 'case-' + c.case_id;
+          elements.push({ data: { id, label: '#' + c.case_id, color: '#64748b', kind: 'case', detail: 'Case #' + c.case_id + ' \u2022 ' + c.mention_count + ' mention(s)' } });
+          elements.push({ data: { id: 'e-' + id, source: rootId, target: id, weight: c.mention_count || 1 } });
         });
-        if (!res.ok) {
-          errEl.textContent = res.status === 401
-            ? 'Incorrect username or password.'
-            : 'Sign-in failed (' + res.status + ').';
-          return;
-        }
-        const data = await res.json();
-        if (!data.access_token) { errEl.textContent = 'Unexpected server response.'; return; }
-        setToken(data.access_token);
-        $('password').value = '';
-        showApp();
-        $('search-input').focus();
-      } catch (_) {
-        errEl.textContent = 'Network error. Is the API reachable?';
-      }
-    });
 
-    $('logout-btn').addEventListener('click', () => { setToken(null); showLogin(); });
-
-    // ----------------------------------------------------------------
-    // SEARCH
-    // ----------------------------------------------------------------
-    let cy = null;
-
-    function setStatus(msg) {
-      const box = $('status');
-      if (!msg) { box.classList.add('hidden'); return; }
-      box.querySelector('div').textContent = msg; // textContent = XSS-safe
-      box.classList.remove('hidden');
-    }
-
-    $('search-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const value = $('search-input').value.trim();
-      if (!value) return;
-      $('results').classList.add('hidden');
-      setStatus('Correlating...');
-      try {
-        const res = await fetch('/search?value=' + encodeURIComponent(value), {
-          headers: { 'Authorization': 'Bearer ' + token },
-        });
-        if (res.status === 401) { setToken(null); showLogin(); return; }
-        if (res.status === 404) { setStatus('No entity found for that value.'); return; }
-        if (!res.ok) { setStatus('Search failed (' + res.status + ').'); return; }
-        const data = await res.json();
-        setStatus(null);
-        render(data);
-      } catch (_) {
-        setStatus('Network error during search.');
-      }
-    });
-
-    // ----------------------------------------------------------------
-    // RENDER (all untrusted values via textContent / DOM APIs only)
-    // ----------------------------------------------------------------
-    function render(data) {
-      const m = meta(data.entity_type);
-
-      $('sum-value').textContent = data.normalized_value;
-      const typeBadge = $('sum-type');
-      typeBadge.textContent = m.label;
-      typeBadge.style.backgroundColor = m.color + '22';
-      typeBadge.style.color = m.color;
-
-      const cases = data.cases || [];
-      const connected = data.connected_entities || [];
-      $('sum-cases').textContent = String(cases.length);
-      $('sum-connected').textContent = String(connected.length);
-
-      // Connection strength: a transparent, data-derived heuristic.
-      // NOT a risk score. Combines total mentions and shared-case links.
-      const totalMentions = cases.reduce((s, c) => s + (c.mention_count || 0), 0);
-      const totalShared = connected.reduce((s, c) => s + (c.shared_case_count || 0), 0);
-      const raw = totalMentions + totalShared + connected.length + cases.length;
-      const pct = Math.max(6, Math.min(100, Math.round((raw / 30) * 100)));
-      $('strength-bar').style.width = pct + '%';
-      const lbl = pct >= 75 ? 'Very strong' : pct >= 50 ? 'Strong' : pct >= 25 ? 'Moderate' : 'Weak';
-      $('strength-label').textContent = lbl + ' (' + pct + '%)';
-
-      // Linked cases table.
-      const cb = $('cases-body');
-      cb.replaceChildren();
-      if (!cases.length) {
-        cb.appendChild(emptyRow(2, 'No linked cases.'));
-      } else {
-        cases.forEach((c) => {
-          const tr = document.createElement('tr');
-          tr.className = 'border-t border-line';
-          tr.appendChild(td('#' + c.case_id, 'px-3 py-2 font-mono'));
-          tr.appendChild(td(String(c.mention_count), 'px-3 py-2 text-right text-slate-400'));
-          cb.appendChild(tr);
-        });
-      }
-
-      // Connected entities table.
-      const eb = $('connected-body');
-      eb.replaceChildren();
-      if (!connected.length) {
-        eb.appendChild(emptyRow(3, 'No connected entities.'));
-      } else {
-        connected.forEach((c) => {
+        (data.connected_entities || []).forEach((c) => {
           const cm = meta(c.entity_type);
-          const tr = document.createElement('tr');
-          tr.className = 'border-t border-line';
-          const typeCell = document.createElement('td');
-          typeCell.className = 'px-3 py-2';
-          const chip = document.createElement('span');
-          chip.className = 'rounded-full px-2 py-0.5 text-[11px] font-medium';
-          chip.style.backgroundColor = cm.color + '22';
-          chip.style.color = cm.color;
-          chip.textContent = cm.label;
-          typeCell.appendChild(chip);
-          tr.appendChild(typeCell);
-          tr.appendChild(td(c.normalized_value, 'px-3 py-2 font-mono break-all'));
-          tr.appendChild(td(String(c.shared_case_count), 'px-3 py-2 text-right text-slate-400'));
-          eb.appendChild(tr);
+          const id = 'ent-' + c.entity_id;
+          elements.push({ data: { id, label: c.normalized_value, color: cm.color, kind: 'entity', detail: cm.label + ' \u2022 ' + c.normalized_value + ' \u2022 shares ' + c.shared_case_count + ' case(s)' } });
+          elements.push({ data: { id: 'e-' + id, source: rootId, target: id, weight: c.shared_case_count || 1 } });
         });
+
+        if (cy) { cy.destroy(); cy = null; }
+        cy = cytoscape({
+          container: cyDiv,
+          elements,
+          style: [
+            {
+              selector: 'node', style: {
+                'background-color': 'data(color)',
+                'label': 'data(label)',
+                'color': '#e2e8f0',
+                'font-size': '9px',
+                'font-family': 'ui-monospace, monospace',
+                'text-valign': 'bottom',
+                'text-margin-y': 4,
+                'text-max-width': '120px',
+                'text-wrap': 'ellipsis',
+                'width': 26, 'height': 26,
+                'border-width': 2,
+                'border-color': '#0a0e14',
+              }
+            },
+            { selector: 'node[kind = "root"]', style: { 'width': 46, 'height': 46, 'font-size': '11px', 'font-weight': 'bold' } },
+            { selector: 'node[kind = "case"]', style: { 'shape': 'round-rectangle' } },
+            {
+              selector: 'edge', style: {
+                'width': 'mapData(weight, 1, 10, 1, 5)',
+                'line-color': '#1f2937',
+                'curve-style': 'bezier',
+                'opacity': 0.8,
+              }
+            },
+            { selector: '.focused', style: { 'border-color': '#38bdf8', 'border-width': 4 } },
+            { selector: '.faded', style: { 'opacity': 0.15 } },
+          ],
+          layout: { name: 'concentric', concentric: (n) => n.data('kind') === 'root' ? 3 : n.data('kind') === 'entity' ? 2 : 1, levelWidth: () => 1, minNodeSpacing: 40, animate: true, animationDuration: 400 },
+          wheelSensitivity: 0.2,
+        });
+
+        const detail = $('node-detail');
+        cy.on('tap', 'node', (evt) => {
+          const n = evt.target;
+          cy.elements().addClass('faded');
+          n.removeClass('faded'); n.neighborhood().removeClass('faded');
+          cy.nodes().removeClass('focused'); n.addClass('focused');
+          detail.textContent = n.data('detail') || n.data('label');
+          detail.classList.remove('hidden');
+        });
+        cy.on('tap', (evt) => {
+          if (evt.target === cy) {
+            cy.elements().removeClass('faded'); cy.nodes().removeClass('focused');
+            detail.classList.add('hidden');
+          }
+        });
+        $('graph-fit').onclick = () => cy && cy.fit(undefined, 40);
       }
 
-      $('results').classList.remove('hidden');
-      renderGraph(data, m);
-    }
+      // ----------------------------------------------------------------
+      // DASHBOARD & CASE CREATION
+      // ----------------------------------------------------------------
+      const navSearchBtn = $('nav-search-btn');
+      const navDashBtn = $('nav-dash-btn');
+      const searchView = $('search-view');
+      const dashboardView = $('dashboard-view');
 
-    function td(text, cls) {
-      const el = document.createElement('td');
-      el.className = cls;
-      el.textContent = text; // XSS-safe
-      return el;
-    }
-    function emptyRow(span, text) {
-      const tr = document.createElement('tr');
-      const cell = document.createElement('td');
-      cell.colSpan = span;
-      cell.className = 'px-3 py-4 text-center text-slate-500';
-      cell.textContent = text;
-      tr.appendChild(cell);
-      return tr;
-    }
-
-    // ----------------------------------------------------------------
-    // GRAPH (Cytoscape). Queried entity at center; cases + connected
-    // entities as surrounding nodes. Degrades gracefully if CDN fails.
-    // ----------------------------------------------------------------
-    function renderGraph(data, m) {
-      const cyDiv = $('cy');
-      const fb = $('graph-fallback');
-      if (window.__cytoscapeFailed || typeof cytoscape === 'undefined') {
-        cyDiv.classList.add('hidden');
-        fb.classList.remove('hidden');
-        return;
-      }
-      fb.classList.add('hidden');
-      cyDiv.classList.remove('hidden');
-
-      const elements = [];
-      const rootId = 'root';
-      elements.push({ data: { id: rootId, label: data.normalized_value, color: m.color, kind: 'root', detail: m.label + ' \u2022 ' + data.normalized_value } });
-
-      (data.cases || []).forEach((c) => {
-        const id = 'case-' + c.case_id;
-        elements.push({ data: { id, label: '#' + c.case_id, color: '#64748b', kind: 'case', detail: 'Case #' + c.case_id + ' \u2022 ' + c.mention_count + ' mention(s)' } });
-        elements.push({ data: { id: 'e-' + id, source: rootId, target: id, weight: c.mention_count || 1 } });
+      navSearchBtn.addEventListener('click', () => {
+        navSearchBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-panel border border-accent text-accent transition';
+        navDashBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition';
+        searchView.classList.remove('hidden');
+        dashboardView.classList.add('hidden');
       });
 
-      (data.connected_entities || []).forEach((c) => {
-        const cm = meta(c.entity_type);
-        const id = 'ent-' + c.entity_id;
-        elements.push({ data: { id, label: c.normalized_value, color: cm.color, kind: 'entity', detail: cm.label + ' \u2022 ' + c.normalized_value + ' \u2022 shares ' + c.shared_case_count + ' case(s)' } });
-        elements.push({ data: { id: 'e-' + id, source: rootId, target: id, weight: c.shared_case_count || 1 } });
+      navDashBtn.addEventListener('click', () => {
+        navDashBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-panel border border-accent text-accent transition';
+        navSearchBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition';
+        dashboardView.classList.remove('hidden');
+        searchView.classList.add('hidden');
       });
 
-      if (cy) { cy.destroy(); cy = null; }
-      cy = cytoscape({
-        container: cyDiv,
-        elements,
-        style: [
-          { selector: 'node', style: {
-              'background-color': 'data(color)',
-              'label': 'data(label)',
-              'color': '#e2e8f0',
-              'font-size': '9px',
-              'font-family': 'ui-monospace, monospace',
-              'text-valign': 'bottom',
-              'text-margin-y': 4,
-              'text-max-width': '120px',
-              'text-wrap': 'ellipsis',
-              'width': 26, 'height': 26,
-              'border-width': 2,
-              'border-color': '#0a0e14',
-          }},
-          { selector: 'node[kind = "root"]', style: { 'width': 46, 'height': 46, 'font-size': '11px', 'font-weight': 'bold' }},
-          { selector: 'node[kind = "case"]', style: { 'shape': 'round-rectangle' }},
-          { selector: 'edge', style: {
-              'width': 'mapData(weight, 1, 10, 1, 5)',
-              'line-color': '#1f2937',
-              'curve-style': 'bezier',
-              'opacity': 0.8,
-          }},
-          { selector: '.focused', style: { 'border-color': '#38bdf8', 'border-width': 4 }},
-          { selector: '.faded', style: { 'opacity': 0.15 }},
-        ],
-        layout: { name: 'concentric', concentric: (n) => n.data('kind') === 'root' ? 3 : n.data('kind') === 'entity' ? 2 : 1, levelWidth: () => 1, minNodeSpacing: 40, animate: true, animationDuration: 400 },
-        wheelSensitivity: 0.2,
-      });
+      $('create-case-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const statusEl = $('case-create-status');
+        statusEl.textContent = 'Creating case...';
+        statusEl.className = 'text-sm text-slate-400 mt-2';
 
-      const detail = $('node-detail');
-      cy.on('tap', 'node', (evt) => {
-        const n = evt.target;
-        cy.elements().addClass('faded');
-        n.removeClass('faded'); n.neighborhood().removeClass('faded');
-        cy.nodes().removeClass('focused'); n.addClass('focused');
-        detail.textContent = n.data('detail') || n.data('label');
-        detail.classList.remove('hidden');
-      });
-      cy.on('tap', (evt) => {
-        if (evt.target === cy) {
-          cy.elements().removeClass('faded'); cy.nodes().removeClass('focused');
-          detail.classList.add('hidden');
+        const title = $('case-title').value.trim();
+        const description = $('case-desc').value.trim();
+
+        try {
+          const res = await fetch('/cases', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ title, description })
+          });
+          if (res.status === 401) { setToken(null); showLogin(); return; }
+          if (!res.ok) {
+            statusEl.textContent = 'Failed to create case (' + res.status + ').';
+            statusEl.className = 'text-sm text-rose-400 mt-2';
+            return;
+          }
+          const data = await res.json();
+          statusEl.textContent = 'Success! Case #' + data.id + ' created.';
+          statusEl.className = 'text-sm text-emerald-400 mt-2';
+
+          // Auto-fill Case ID into evidence upload
+          $('upload-case-id').value = data.id;
+          $('case-title').value = '';
+          $('case-desc').value = '';
+        } catch (_) {
+          statusEl.textContent = 'Network error during case creation.';
+          statusEl.className = 'text-sm text-rose-400 mt-2';
         }
       });
-      $('graph-fit').onclick = () => cy && cy.fit(undefined, 40);
-    }
 
-    // ----------------------------------------------------------------
-    // DASHBOARD & CASE CREATION
-    // ----------------------------------------------------------------
-    const navSearchBtn = $('nav-search-btn');
-    const navDashBtn = $('nav-dash-btn');
-    const searchView = $('search-view');
-    const dashboardView = $('dashboard-view');
+      // ----------------------------------------------------------------
+      // DRAG AND DROP / FILE UPLOAD QUEUE
+      // ----------------------------------------------------------------
+      let selectedFiles = [];
 
-    navSearchBtn.addEventListener('click', () => {
-      navSearchBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-panel border border-accent text-accent transition';
-      navDashBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition';
-      searchView.classList.remove('hidden');
-      dashboardView.classList.add('hidden');
-    });
+      const dropZone = $('drop-zone');
+      const fileInput = $('file-input');
+      const queueContainer = $('queue-container');
+      const queueList = $('queue-list');
+      const startUploadBtn = $('start-upload-btn');
+      const clearQueueBtn = $('clear-queue-btn');
 
-    navDashBtn.addEventListener('click', () => {
-      navDashBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-panel border border-accent text-accent transition';
-      navSearchBtn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition';
-      dashboardView.classList.remove('hidden');
-      searchView.classList.add('hidden');
-    });
+      dropZone.addEventListener('click', () => fileInput.click());
 
-    $('create-case-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const statusEl = $('case-create-status');
-      statusEl.textContent = 'Creating case...';
-      statusEl.className = 'text-sm text-slate-400 mt-2';
-      
-      const title = $('case-title').value.trim();
-      const description = $('case-desc').value.trim();
-      
-      try {
-        const res = await fetch('/cases', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          body: JSON.stringify({ title, description })
-        });
-        if (res.status === 401) { setToken(null); showLogin(); return; }
-        if (!res.ok) {
-          statusEl.textContent = 'Failed to create case (' + res.status + ').';
-          statusEl.className = 'text-sm text-rose-400 mt-2';
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, e => e.preventDefault(), false);
+      });
+
+      dropZone.addEventListener('dragover', () => dropZone.classList.add('border-accent/80', 'bg-ink/50'));
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent/80', 'bg-ink/50'));
+
+      dropZone.addEventListener('drop', e => {
+        dropZone.classList.remove('border-accent/80', 'bg-ink/50');
+        const dt = e.dataTransfer;
+        addFiles(dt.files);
+      });
+
+      fileInput.addEventListener('change', () => {
+        addFiles(fileInput.files);
+      });
+
+      function addFiles(files) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          if (selectedFiles.some(f => f.file.name === file.name && f.file.size === file.size)) continue;
+          selectedFiles.push({
+            file: file,
+            status: 'pending',
+            progress: 0,
+            result: null,
+            errorMsg: null
+          });
+        }
+        renderQueue();
+      }
+
+      function renderQueue() {
+        if (selectedFiles.length === 0) {
+          queueContainer.classList.add('hidden');
+          queueList.replaceChildren();
           return;
         }
-        const data = await res.json();
-        statusEl.textContent = 'Success! Case #' + data.id + ' created.';
-        statusEl.className = 'text-sm text-emerald-400 mt-2';
-        
-        // Auto-fill Case ID into evidence upload
-        $('upload-case-id').value = data.id;
-        $('case-title').value = '';
-        $('case-desc').value = '';
-      } catch (_) {
-        statusEl.textContent = 'Network error during case creation.';
-        statusEl.className = 'text-sm text-rose-400 mt-2';
-      }
-    });
 
-    // ----------------------------------------------------------------
-    // DRAG AND DROP / FILE UPLOAD QUEUE
-    // ----------------------------------------------------------------
-    let selectedFiles = [];
-
-    const dropZone = $('drop-zone');
-    const fileInput = $('file-input');
-    const queueContainer = $('queue-container');
-    const queueList = $('queue-list');
-    const startUploadBtn = $('start-upload-btn');
-    const clearQueueBtn = $('clear-queue-btn');
-
-    dropZone.addEventListener('click', () => fileInput.click());
-
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, e => e.preventDefault(), false);
-    });
-
-    dropZone.addEventListener('dragover', () => dropZone.classList.add('border-accent/80', 'bg-ink/50'));
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent/80', 'bg-ink/50'));
-    
-    dropZone.addEventListener('drop', e => {
-      dropZone.classList.remove('border-accent/80', 'bg-ink/50');
-      const dt = e.dataTransfer;
-      addFiles(dt.files);
-    });
-
-    fileInput.addEventListener('change', () => {
-      addFiles(fileInput.files);
-    });
-
-    function addFiles(files) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (selectedFiles.some(f => f.file.name === file.name && f.file.size === file.size)) continue;
-        selectedFiles.push({
-          file: file,
-          status: 'pending',
-          progress: 0,
-          result: null,
-          errorMsg: null
-        });
-      }
-      renderQueue();
-    }
-
-    function renderQueue() {
-      if (selectedFiles.length === 0) {
-        queueContainer.classList.add('hidden');
+        queueContainer.classList.remove('hidden');
         queueList.replaceChildren();
-        return;
-      }
-      
-      queueContainer.classList.remove('hidden');
-      queueList.replaceChildren();
-      
-      selectedFiles.forEach((item, index) => {
-        const row = document.createElement('div');
-        row.className = 'p-3 flex items-center justify-between text-xs border-b border-line last:border-0';
-        
-        const fileInfo = document.createElement('div');
-        fileInfo.className = 'flex flex-col gap-0.5 max-w-[70%]';
-        const name = document.createElement('span');
-        name.className = 'font-medium text-slate-300 break-all';
-        name.textContent = item.file.name;
-        const size = document.createElement('span');
-        size.className = 'text-[10px] text-slate-500 font-mono';
-        size.textContent = (item.file.size / 1024 / 1024).toFixed(2) + ' MB';
-        fileInfo.appendChild(name);
-        fileInfo.appendChild(size);
-        
-        const statusContainer = document.createElement('div');
-        statusContainer.className = 'flex items-center gap-2';
-        
-        const statusBadge = document.createElement('span');
-        statusBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-semibold';
-        
-        if (item.status === 'pending') {
-          statusBadge.textContent = 'Pending';
-          statusBadge.className += ' bg-slate-800 text-slate-400';
-        } else if (item.status === 'uploading') {
-          statusBadge.textContent = 'Uploading...';
-          statusBadge.className += ' bg-sky-950 text-sky-400 animate-pulse';
-        } else if (item.status === 'success') {
-          statusBadge.textContent = 'Success';
-          statusBadge.className += ' bg-emerald-950 text-emerald-400';
-          if (item.result) {
-            const count = document.createElement('span');
-            count.className = 'ml-1 text-[9px] px-1 bg-emerald-900/60 rounded text-slate-300 font-mono';
-            count.textContent = item.result.hash_short;
-            statusBadge.appendChild(count);
-          }
-        } else if (item.status === 'error') {
-          statusBadge.textContent = 'Error';
-          statusBadge.className += ' bg-rose-950 text-rose-400';
-          if (item.errorMsg) {
-            statusBadge.title = item.errorMsg;
-            statusBadge.style.cursor = 'help';
-          }
-        }
-        
-        statusContainer.appendChild(statusBadge);
 
-        if (item.status !== 'uploading') {
-          const removeBtn = document.createElement('button');
-          removeBtn.className = 'text-slate-500 hover:text-rose-400 transition ml-1';
-          removeBtn.innerHTML = `
+        selectedFiles.forEach((item, index) => {
+          const row = document.createElement('div');
+          row.className = 'p-3 flex items-center justify-between text-xs border-b border-line last:border-0';
+
+          const fileInfo = document.createElement('div');
+          fileInfo.className = 'flex flex-col gap-0.5 max-w-[70%]';
+          const name = document.createElement('span');
+          name.className = 'font-medium text-slate-300 break-all';
+          name.textContent = item.file.name;
+          const size = document.createElement('span');
+          size.className = 'text-[10px] text-slate-500 font-mono';
+          size.textContent = (item.file.size / 1024 / 1024).toFixed(2) + ' MB';
+          fileInfo.appendChild(name);
+          fileInfo.appendChild(size);
+
+          const statusContainer = document.createElement('div');
+          statusContainer.className = 'flex items-center gap-2';
+
+          const statusBadge = document.createElement('span');
+          statusBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-semibold';
+
+          if (item.status === 'pending') {
+            statusBadge.textContent = 'Pending';
+            statusBadge.className += ' bg-slate-800 text-slate-400';
+          } else if (item.status === 'uploading') {
+            statusBadge.textContent = 'Uploading...';
+            statusBadge.className += ' bg-sky-950 text-sky-400 animate-pulse';
+          } else if (item.status === 'success') {
+            statusBadge.textContent = 'Success';
+            statusBadge.className += ' bg-emerald-950 text-emerald-400';
+            if (item.result) {
+              const count = document.createElement('span');
+              count.className = 'ml-1 text-[9px] px-1 bg-emerald-900/60 rounded text-slate-300 font-mono';
+              count.textContent = item.result.hash_short;
+              statusBadge.appendChild(count);
+            }
+          } else if (item.status === 'error') {
+            statusBadge.textContent = 'Error';
+            statusBadge.className += ' bg-rose-950 text-rose-400';
+            if (item.errorMsg) {
+              statusBadge.title = item.errorMsg;
+              statusBadge.style.cursor = 'help';
+            }
+          }
+
+          statusContainer.appendChild(statusBadge);
+
+          if (item.status !== 'uploading') {
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'text-slate-500 hover:text-rose-400 transition ml-1';
+            removeBtn.innerHTML = `
             <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
             </svg>
           `;
-          removeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            selectedFiles.splice(index, 1);
-            renderQueue();
-          });
-          statusContainer.appendChild(removeBtn);
-        }
-        
-        row.appendChild(fileInfo);
-        row.appendChild(statusContainer);
-        queueList.appendChild(row);
-      });
-    }
+            removeBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              selectedFiles.splice(index, 1);
+              renderQueue();
+            });
+            statusContainer.appendChild(removeBtn);
+          }
 
-    clearQueueBtn.addEventListener('click', () => {
-      if (selectedFiles.some(f => f.status === 'uploading')) return;
-      selectedFiles = [];
-      renderQueue();
-    });
-
-    startUploadBtn.addEventListener('click', async () => {
-      const caseIdInput = $('upload-case-id');
-      const caseId = caseIdInput.value.trim();
-      if (!caseId) {
-        alert('Please enter a target Case ID.');
-        caseIdInput.focus();
-        return;
+          row.appendChild(fileInfo);
+          row.appendChild(statusContainer);
+          queueList.appendChild(row);
+        });
       }
 
-      if (selectedFiles.length === 0) return;
-      
-      startUploadBtn.disabled = true;
-      startUploadBtn.classList.add('opacity-50', 'cursor-not-allowed');
-      
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const item = selectedFiles[i];
-        if (item.status === 'success') continue;
-        
-        item.status = 'uploading';
+      clearQueueBtn.addEventListener('click', () => {
+        if (selectedFiles.some(f => f.status === 'uploading')) return;
+        selectedFiles = [];
         renderQueue();
-        
-        const formData = new FormData();
-        formData.append('file', item.file);
-        
+      });
+
+      startUploadBtn.addEventListener('click', async () => {
+        const caseIdInput = $('upload-case-id');
+        const caseId = caseIdInput.value.trim();
+        if (!caseId) {
+          alert('Please enter a target Case ID.');
+          caseIdInput.focus();
+          return;
+        }
+
+        if (selectedFiles.length === 0) return;
+
+        startUploadBtn.disabled = true;
+        startUploadBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const item = selectedFiles[i];
+          if (item.status === 'success') continue;
+
+          item.status = 'uploading';
+          renderQueue();
+
+          const formData = new FormData();
+          formData.append('file', item.file);
+
+          try {
+            const res = await fetch(`/cases/${caseId}/evidence`, {
+              method: 'POST',
+              headers: {
+                'Authorization': 'Bearer ' + token
+              },
+              body: formData
+            });
+
+            if (res.status === 401) {
+              setToken(null);
+              showLogin();
+              return;
+            }
+
+            if (res.ok) {
+              const data = await res.json();
+              item.status = 'success';
+              item.result = {
+                id: data.id,
+                hash_short: data.sha256.substring(0, 8) + '...'
+              };
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              item.status = 'error';
+              item.errorMsg = errData.detail || `Upload failed (${res.status})`;
+            }
+          } catch (err) {
+            item.status = 'error';
+            item.errorMsg = 'Network error or connection timed out.';
+          }
+
+          renderQueue();
+        }
+
+        startUploadBtn.disabled = false;
+        startUploadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        // Fetch evidence list after batch upload finishes
+        fetchEvidenceList(caseId);
+      });
+
+      // ----------------------------------------------------------------
+      // EXTRACTION RESULTS REVIEW
+      // ----------------------------------------------------------------
+      async function fetchEvidenceList(caseId) {
+        const container = $('extraction-results-container');
+        const list = $('extraction-list');
+        list.innerHTML = '<div class="text-sm text-slate-400">Loading extraction results...</div>';
+        container.classList.remove('hidden');
+
         try {
           const res = await fetch(`/cases/${caseId}/evidence`, {
-            method: 'POST',
-            headers: {
-              'Authorization': 'Bearer ' + token
-            },
-            body: formData
+            headers: { 'Authorization': 'Bearer ' + token }
           });
-          
-          if (res.status === 401) {
-            setToken(null);
-            showLogin();
-            return;
-          }
-          
-          if (res.ok) {
-            const data = await res.json();
-            item.status = 'success';
-            item.result = {
-              id: data.id,
-              hash_short: data.sha256.substring(0, 8) + '...'
-            };
-          } else {
-            const errData = await res.json().catch(() => ({}));
-            item.status = 'error';
-            item.errorMsg = errData.detail || `Upload failed (${res.status})`;
-          }
+          if (res.status === 401) { setToken(null); showLogin(); return; }
+          if (!res.ok) throw new Error('Failed to fetch evidence');
+
+          const data = await res.json();
+          renderEvidenceList(data, caseId);
         } catch (err) {
-          item.status = 'error';
-          item.errorMsg = 'Network error or connection timed out.';
+          list.innerHTML = `<div class="text-sm text-rose-400">Error loading evidence: ${err.message}</div>`;
         }
-        
-        renderQueue();
-      }
-      
-      startUploadBtn.disabled = false;
-      startUploadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-      
-      // Fetch evidence list after batch upload finishes
-      fetchEvidenceList(caseId);
-    });
-
-    // ----------------------------------------------------------------
-    // EXTRACTION RESULTS REVIEW
-    // ----------------------------------------------------------------
-    async function fetchEvidenceList(caseId) {
-      const container = $('extraction-results-container');
-      const list = $('extraction-list');
-      list.innerHTML = '<div class="text-sm text-slate-400">Loading extraction results...</div>';
-      container.classList.remove('hidden');
-
-      try {
-        const res = await fetch(`/cases/${caseId}/evidence`, {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (res.status === 401) { setToken(null); showLogin(); return; }
-        if (!res.ok) throw new Error('Failed to fetch evidence');
-        
-        const data = await res.json();
-        renderEvidenceList(data, caseId);
-      } catch (err) {
-        list.innerHTML = `<div class="text-sm text-rose-400">Error loading evidence: ${err.message}</div>`;
-      }
-    }
-
-    function renderEvidenceList(evidenceArray, caseId) {
-      const list = $('extraction-list');
-      list.replaceChildren();
-
-      if (!evidenceArray || evidenceArray.length === 0) {
-        list.innerHTML = '<div class="text-sm text-slate-400">No evidence attached to this case.</div>';
-        return;
       }
 
-      evidenceArray.forEach(ev => {
-        const card = document.createElement('div');
-        card.className = 'rounded-xl border border-line bg-panel2/50 overflow-hidden';
+      function renderEvidenceList(evidenceArray, caseId) {
+        const list = $('extraction-list');
+        list.replaceChildren();
 
-        // Header
-        const header = document.createElement('div');
-        header.className = 'px-4 py-3 bg-panel2 border-b border-line flex items-center justify-between';
-        header.innerHTML = `
+        if (!evidenceArray || evidenceArray.length === 0) {
+          list.innerHTML = '<div class="text-sm text-slate-400">No evidence attached to this case.</div>';
+          return;
+        }
+
+        evidenceArray.forEach(ev => {
+          const card = document.createElement('div');
+          card.className = 'rounded-xl border border-line bg-panel2/50 overflow-hidden';
+
+          // Header
+          const header = document.createElement('div');
+          header.className = 'px-4 py-3 bg-panel2 border-b border-line flex items-center justify-between';
+          header.innerHTML = `
           <div>
             <p class="text-sm font-semibold text-slate-200 break-all">${ev.original_filename}</p>
             <p class="text-[10px] text-slate-500 font-mono mt-0.5">SHA-256: ${ev.sha256.substring(0, 16)}...</p>
@@ -1004,204 +1200,205 @@
             ID: ${ev.id}
           </div>
         `;
-        card.appendChild(header);
+          card.appendChild(header);
 
-        // Body
-        const body = document.createElement('div');
-        body.className = 'p-4 space-y-4';
+          // Body
+          const body = document.createElement('div');
+          body.className = 'p-4 space-y-4';
 
-        // Extracted Text section
-        const textSection = document.createElement('div');
-        
-        const textHeader = document.createElement('div');
-        textHeader.className = 'flex items-center justify-between mb-2';
-        
-        const textTitle = document.createElement('h3');
-        textTitle.className = 'text-xs uppercase tracking-wide text-slate-400';
-        textTitle.textContent = 'Extracted Text';
-        
-        const actionDiv = document.createElement('div');
-        actionDiv.className = 'flex items-center gap-2';
-        
-        const verifyBtn = document.createElement('button');
-        verifyBtn.className = 'text-[11px] px-2 py-1 rounded border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition flex items-center gap-1';
-        verifyBtn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Verify';
-        
-        const editBtn = document.createElement('button');
-        editBtn.className = 'text-[11px] px-2 py-1 rounded border border-slate-600 text-slate-300 hover:bg-slate-700 transition flex items-center gap-1';
-        editBtn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg> Edit';
+          // Extracted Text section
+          const textSection = document.createElement('div');
 
-        actionDiv.appendChild(verifyBtn);
-        actionDiv.appendChild(editBtn);
-        textHeader.appendChild(textTitle);
-        textHeader.appendChild(actionDiv);
-        textSection.appendChild(textHeader);
+          const textHeader = document.createElement('div');
+          textHeader.className = 'flex items-center justify-between mb-2';
 
-        // Read-only text display
-        const textDisplay = document.createElement('div');
-        textDisplay.className = 'text-sm text-slate-300 bg-ink p-3 rounded-lg border border-line whitespace-pre-wrap max-h-40 overflow-y-auto font-mono text-[11px]';
-        textDisplay.textContent = ev.extracted_text || '(No text extracted)';
-        textSection.appendChild(textDisplay);
+          const textTitle = document.createElement('h3');
+          textTitle.className = 'text-xs uppercase tracking-wide text-slate-400';
+          textTitle.textContent = 'Extracted Text';
 
-        // Edit form (hidden initially)
-        const editForm = document.createElement('div');
-        editForm.className = 'hidden space-y-2';
-        const textArea = document.createElement('textarea');
-        textArea.className = 'w-full rounded-lg bg-ink border border-accent/50 p-3 text-[11px] font-mono text-slate-300 focus:outline-none focus:ring-1 focus:ring-accent';
-        textArea.rows = 6;
-        textArea.value = ev.extracted_text || '';
-        
-        const formActions = document.createElement('div');
-        formActions.className = 'flex items-center gap-2 justify-end';
-        
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'text-xs px-3 py-1.5 rounded text-slate-400 hover:text-slate-200 transition';
-        cancelBtn.textContent = 'Cancel';
-        
-        const saveBtn = document.createElement('button');
-        saveBtn.className = 'text-xs px-3 py-1.5 rounded bg-accent text-ink font-semibold hover:bg-accent2 transition';
-        saveBtn.textContent = 'Save & Re-extract';
-        
-        const editStatus = document.createElement('span');
-        editStatus.className = 'text-xs text-slate-400 mr-auto';
+          const actionDiv = document.createElement('div');
+          actionDiv.className = 'flex items-center gap-2';
 
-        formActions.appendChild(editStatus);
-        formActions.appendChild(cancelBtn);
-        formActions.appendChild(saveBtn);
-        
-        editForm.appendChild(textArea);
-        editForm.appendChild(formActions);
-        textSection.appendChild(editForm);
+          const verifyBtn = document.createElement('button');
+          verifyBtn.className = 'text-[11px] px-2 py-1 rounded border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition flex items-center gap-1';
+          verifyBtn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Verify';
 
-        // Entities Section
-        const entitySection = document.createElement('div');
-        const entityTitle = document.createElement('h3');
-        entityTitle.className = 'text-xs uppercase tracking-wide text-slate-400 mb-2 mt-4 border-t border-line pt-4';
-        entityTitle.textContent = 'Extracted Entities';
-        entitySection.appendChild(entityTitle);
+          const editBtn = document.createElement('button');
+          editBtn.className = 'text-[11px] px-2 py-1 rounded border border-slate-600 text-slate-300 hover:bg-slate-700 transition flex items-center gap-1';
+          editBtn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg> Edit';
 
-        const entityList = document.createElement('div');
-        entityList.className = 'flex flex-wrap gap-2';
-        
-        function renderEntities(entities) {
-          entityList.replaceChildren();
-          if (!entities || entities.length === 0) {
-            const empty = document.createElement('span');
-            empty.className = 'text-[11px] text-slate-500 italic';
-            empty.textContent = 'No entities found.';
-            entityList.appendChild(empty);
-            return;
-          }
-          
-          entities.forEach(ent => {
-            const cm = meta(ent.entity_type);
-            const chip = document.createElement('div');
-            chip.className = 'flex items-center text-[11px] rounded-md border border-line overflow-hidden bg-ink';
-            
-            const typeBadge = document.createElement('span');
-            typeBadge.className = 'px-2 py-1 font-semibold';
-            typeBadge.style.backgroundColor = cm.color + '22';
-            typeBadge.style.color = cm.color;
-            typeBadge.textContent = cm.label;
-            
-            const valBadge = document.createElement('span');
-            valBadge.className = 'px-2 py-1 font-mono text-slate-300 border-l border-line';
-            valBadge.textContent = ent.normalized_value;
-            
-            chip.appendChild(typeBadge);
-            chip.appendChild(valBadge);
-            entityList.appendChild(chip);
-          });
-        }
-        
-        renderEntities(ev.linked_entities);
-        entitySection.appendChild(entityList);
+          actionDiv.appendChild(verifyBtn);
+          actionDiv.appendChild(editBtn);
+          textHeader.appendChild(textTitle);
+          textHeader.appendChild(actionDiv);
+          textSection.appendChild(textHeader);
 
-        // Interaction logic
-        verifyBtn.onclick = () => {
-          verifyBtn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified';
-          verifyBtn.className = 'text-[11px] px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 flex items-center gap-1 font-semibold';
-          editBtn.classList.add('hidden');
-        };
+          // Read-only text display
+          const textDisplay = document.createElement('div');
+          textDisplay.className = 'text-sm text-slate-300 bg-ink p-3 rounded-lg border border-line whitespace-pre-wrap max-h-40 overflow-y-auto font-mono text-[11px]';
+          textDisplay.textContent = ev.extracted_text || '(No text extracted)';
+          textSection.appendChild(textDisplay);
 
-        editBtn.onclick = () => {
-          textDisplay.classList.add('hidden');
-          actionDiv.classList.add('hidden');
-          editForm.classList.remove('hidden');
-          textArea.focus();
-        };
+          // Edit form (hidden initially)
+          const editForm = document.createElement('div');
+          editForm.className = 'hidden space-y-2';
+          const textArea = document.createElement('textarea');
+          textArea.className = 'w-full rounded-lg bg-ink border border-accent/50 p-3 text-[11px] font-mono text-slate-300 focus:outline-none focus:ring-1 focus:ring-accent';
+          textArea.rows = 6;
+          textArea.value = ev.extracted_text || '';
 
-        cancelBtn.onclick = () => {
-          editForm.classList.add('hidden');
-          textDisplay.classList.remove('hidden');
-          actionDiv.classList.remove('hidden');
-          textArea.value = textDisplay.textContent === '(No text extracted)' ? '' : textDisplay.textContent;
-          editStatus.textContent = '';
-        };
+          const formActions = document.createElement('div');
+          formActions.className = 'flex items-center gap-2 justify-end';
 
-        saveBtn.onclick = async () => {
-          const newText = textArea.value;
-          saveBtn.disabled = true;
-          cancelBtn.disabled = true;
-          editStatus.textContent = 'Saving...';
-          
-          try {
-            const res = await fetch(`/cases/${caseId}/evidence/${ev.id}/extracted-text`, {
-              method: 'PUT',
-              headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ extracted_text: newText })
+          const cancelBtn = document.createElement('button');
+          cancelBtn.className = 'text-xs px-3 py-1.5 rounded text-slate-400 hover:text-slate-200 transition';
+          cancelBtn.textContent = 'Cancel';
+
+          const saveBtn = document.createElement('button');
+          saveBtn.className = 'text-xs px-3 py-1.5 rounded bg-accent text-ink font-semibold hover:bg-accent2 transition';
+          saveBtn.textContent = 'Save & Re-extract';
+
+          const editStatus = document.createElement('span');
+          editStatus.className = 'text-xs text-slate-400 mr-auto';
+
+          formActions.appendChild(editStatus);
+          formActions.appendChild(cancelBtn);
+          formActions.appendChild(saveBtn);
+
+          editForm.appendChild(textArea);
+          editForm.appendChild(formActions);
+          textSection.appendChild(editForm);
+
+          // Entities Section
+          const entitySection = document.createElement('div');
+          const entityTitle = document.createElement('h3');
+          entityTitle.className = 'text-xs uppercase tracking-wide text-slate-400 mb-2 mt-4 border-t border-line pt-4';
+          entityTitle.textContent = 'Extracted Entities';
+          entitySection.appendChild(entityTitle);
+
+          const entityList = document.createElement('div');
+          entityList.className = 'flex flex-wrap gap-2';
+
+          function renderEntities(entities) {
+            entityList.replaceChildren();
+            if (!entities || entities.length === 0) {
+              const empty = document.createElement('span');
+              empty.className = 'text-[11px] text-slate-500 italic';
+              empty.textContent = 'No entities found.';
+              entityList.appendChild(empty);
+              return;
+            }
+
+            entities.forEach(ent => {
+              const cm = meta(ent.entity_type);
+              const chip = document.createElement('div');
+              chip.className = 'flex items-center text-[11px] rounded-md border border-line overflow-hidden bg-ink';
+
+              const typeBadge = document.createElement('span');
+              typeBadge.className = 'px-2 py-1 font-semibold';
+              typeBadge.style.backgroundColor = cm.color + '22';
+              typeBadge.style.color = cm.color;
+              typeBadge.textContent = cm.label;
+
+              const valBadge = document.createElement('span');
+              valBadge.className = 'px-2 py-1 font-mono text-slate-300 border-l border-line';
+              valBadge.textContent = ent.normalized_value;
+
+              chip.appendChild(typeBadge);
+              chip.appendChild(valBadge);
+              entityList.appendChild(chip);
             });
-            
-            if (!res.ok) throw new Error('Save failed');
-            const updatedEv = await res.json();
-            
-            // Update UI
-            textDisplay.textContent = updatedEv.extracted_text || '(No text extracted)';
-            renderEntities(updatedEv.linked_entities);
-            
-            // Revert to read-only view
+          }
+
+          renderEntities(ev.linked_entities);
+          entitySection.appendChild(entityList);
+
+          // Interaction logic
+          verifyBtn.onclick = () => {
+            verifyBtn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified';
+            verifyBtn.className = 'text-[11px] px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 flex items-center gap-1 font-semibold';
+            editBtn.classList.add('hidden');
+          };
+
+          editBtn.onclick = () => {
+            textDisplay.classList.add('hidden');
+            actionDiv.classList.add('hidden');
+            editForm.classList.remove('hidden');
+            textArea.focus();
+          };
+
+          cancelBtn.onclick = () => {
             editForm.classList.add('hidden');
             textDisplay.classList.remove('hidden');
             actionDiv.classList.remove('hidden');
+            textArea.value = textDisplay.textContent === '(No text extracted)' ? '' : textDisplay.textContent;
             editStatus.textContent = '';
-            
-            // Add a small success flash to the card
-            card.classList.add('ring-2', 'ring-accent', 'transition-all');
-            setTimeout(() => card.classList.remove('ring-2', 'ring-accent'), 1000);
-            
-          } catch (err) {
-            editStatus.textContent = 'Error: ' + err.message;
-            editStatus.className = 'text-xs text-rose-400 mr-auto';
-          } finally {
-            saveBtn.disabled = false;
-            cancelBtn.disabled = false;
-          }
-        };
+          };
 
-        body.appendChild(textSection);
-        body.appendChild(entitySection);
-        card.appendChild(body);
-        list.appendChild(card);
-      });
-    }
-    
-    // Allow fetching existing evidence if the user just types a Case ID and presses Enter
-    $('upload-case-id').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const caseId = e.target.value.trim();
-        if (caseId) fetchEvidenceList(caseId);
+          saveBtn.onclick = async () => {
+            const newText = textArea.value;
+            saveBtn.disabled = true;
+            cancelBtn.disabled = true;
+            editStatus.textContent = 'Saving...';
+
+            try {
+              const res = await fetch(`/cases/${caseId}/evidence/${ev.id}/extracted-text`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': 'Bearer ' + token,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ extracted_text: newText })
+              });
+
+              if (!res.ok) throw new Error('Save failed');
+              const updatedEv = await res.json();
+
+              // Update UI
+              textDisplay.textContent = updatedEv.extracted_text || '(No text extracted)';
+              renderEntities(updatedEv.linked_entities);
+
+              // Revert to read-only view
+              editForm.classList.add('hidden');
+              textDisplay.classList.remove('hidden');
+              actionDiv.classList.remove('hidden');
+              editStatus.textContent = '';
+
+              // Add a small success flash to the card
+              card.classList.add('ring-2', 'ring-accent', 'transition-all');
+              setTimeout(() => card.classList.remove('ring-2', 'ring-accent'), 1000);
+
+            } catch (err) {
+              editStatus.textContent = 'Error: ' + err.message;
+              editStatus.className = 'text-xs text-rose-400 mr-auto';
+            } finally {
+              saveBtn.disabled = false;
+              cancelBtn.disabled = false;
+            }
+          };
+
+          body.appendChild(textSection);
+          body.appendChild(entitySection);
+          card.appendChild(body);
+          list.appendChild(card);
+        });
       }
-    });
 
-    // ----------------------------------------------------------------
-    // Boot: resume session if a token is present.
-    // ----------------------------------------------------------------
-    if (token) showApp(); else showLogin();
-  })();
+      // Allow fetching existing evidence if the user just types a Case ID and presses Enter
+      $('upload-case-id').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const caseId = e.target.value.trim();
+          if (caseId) fetchEvidenceList(caseId);
+        }
+      });
+
+      // ----------------------------------------------------------------
+      // Boot: resume session if a token is present.
+      // ----------------------------------------------------------------
+      if (token) showApp(); else showLogin();
+    })();
   </script>
 </body>
+
 </html>

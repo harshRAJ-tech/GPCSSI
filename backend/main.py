@@ -25,6 +25,7 @@ from app.api.routes import entities as entities_routes
 from app.api.routes import evidence as evidence_routes
 from app.api.routes import search as search_routes
 from app.api.routes import users as users_routes
+from app.api.routes import dashboard as dashboard_routes
 
 
 from slowapi import _rate_limit_exceeded_handler
@@ -61,18 +62,7 @@ app.include_router(entities_routes.router)
 app.include_router(search_routes.router)
 app.include_router(clusters_routes.router)
 app.include_router(evidence_routes.router)
-
-# Serve the build-step-free investigator UI same-origin (no CORS needed).
-# WHY same-origin: the page calls /auth/login and /search directly; serving
-# it from the API avoids cross-origin config and keeps the JWT on one origin.
-_STATIC_DIR = Path(__file__).resolve().parent / "app" / "static"
-app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
-
-
-@app.get("/", include_in_schema=False)
-def index() -> FileResponse:
-    """Serve the single-page investigator Search screen."""
-    return FileResponse(str(_STATIC_DIR / "index.html"))
+app.include_router(dashboard_routes.router)
 
 
 @app.get("/health")
